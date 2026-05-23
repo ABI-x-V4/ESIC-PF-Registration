@@ -1,0 +1,429 @@
+﻿$(function () {
+
+    $(document).on("change", ".stateDropdown", function () {   
+        var stateId = $(this).val();
+        var targetDistrictId = $(this).data("target");
+        var districtDropdown = $("#" + targetDistrictId);
+
+        districtDropdown.empty()
+            .append('<option value="">-- Select District --</option>');
+
+        if (!stateId) return;
+
+        $.get('/Employee/GetDistrictsByState', { stateId: stateId }, function (data) {
+            console.log(data);
+            $.each(data, function (i, item) {
+                console.log(item); 
+                districtDropdown.append(
+                    '<option value="' + item.id + '">' + item.districtName + '</option>'
+                );
+            });
+        });
+
+    });
+
+});
+
+//Address
+$(function () {
+
+    const checkbox = document.getElementById("sameAddressCheck");
+
+    const present = document.getElementById("presentAddress");
+    const presentStateID = document.getElementById("presentstateDropdown");
+    const presentDistrictID = document.getElementById("presentdistrictDropdown");
+    const presentPinCode = document.getElementById("presentPinCode");
+    const presentMobile = document.getElementById("presentMobile");
+    const presentEmail = document.getElementById("presentEmail");
+
+    const permanent = document.getElementById("permanentAddress");
+    const permanentStateID = document.getElementById("permanentstateDropdown");
+    const permanentDistrictID = document.getElementById("permanentdistrictDropdown");
+    const permanentPinCode = document.getElementById("permanentPinCode");
+    const permanentMobile = document.getElementById("permanentMobile");
+    const permanentEmail = document.getElementById("permanentEmail");
+
+    function copyAddress() {
+        permanent.value = present.value;
+        permanentPinCode.value = presentPinCode.value;
+        permanentMobile.value = presentMobile.value;
+        permanentEmail.value = presentEmail.value;
+
+        permanentStateID.value = presentStateID.value;
+
+        $(permanentStateID).trigger('change');
+
+        setTimeout(function () {
+            permanentDistrictID.value = presentDistrictID.value;
+        }, 300); 
+    }
+
+    checkbox.addEventListener("change", function () {
+
+        if (this.checked) {
+            copyAddress();
+
+            permanent.readOnly = true;
+            permanentPinCode.readOnly = true;
+            permanentMobile.readOnly = true;
+            permanentEmail.readOnly = true;
+
+            //permanentStateID.disabled = true;
+            //permanentDistrictID.disabled = true;
+
+            permanentStateID.style.pointerEvents = "none";
+            permanentDistrictID.style.pointerEvents = "none";
+            permanentStateID.classList.add("bg-light");
+            permanentDistrictID.classList.add("bg-light");
+
+
+        } else {
+            permanent.readOnly = false;
+            permanentPinCode.readOnly = false;
+            permanentMobile.readOnly = false;
+            permanentEmail.readOnly = false;
+
+            //permanentStateID.disabled = false;
+            //permanentDistrictID.disabled = false;
+
+            permanentStateID.style.pointerEvents = "auto";
+            permanentDistrictID.style.pointerEvents = "auto";
+            permanentStateID.classList.remove("bg-light");
+            permanentDistrictID.classList.remove("bg-light");
+
+
+            permanent.value = "";
+            permanentStateID.value = "";
+            permanentDistrictID.value = "";
+            permanentPinCode.value = "";
+            permanentMobile.value = "";
+            permanentEmail.value = "";
+        }
+    });
+
+    present.addEventListener("input", function () {
+        if (checkbox.checked) copyAddress();
+    });
+
+    presentPinCode.addEventListener("input", function () {
+        if (checkbox.checked) permanentPinCode.value = presentPinCode.value;
+    });
+
+    presentMobile.addEventListener("input", function () {
+        if (checkbox.checked) permanentMobile.value = presentMobile.value;
+    });
+
+    presentEmail.addEventListener("input", function () {
+        if (checkbox.checked) permanentEmail.value = presentEmail.value;
+    });
+
+    presentStateID.addEventListener("change", function () {
+        if (checkbox.checked) copyAddress();
+    });
+
+    presentDistrictID.addEventListener("change", function () {
+        if (checkbox.checked) {
+            permanentDistrictID.value = presentDistrictID.value;
+        }
+    });
+
+});
+
+// Nominee 
+let nomineeList = [];
+let familyList = [];
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const dropdown = document.getElementById("esicDropdown");
+    const ipBlock = document.getElementById("ipBlock");    
+
+    function toggleIpField() {
+        if (dropdown.value === "1") {
+            ipBlock.style.display = "block";
+        } else {
+            ipBlock.style.display = "none";
+        }
+    }
+    toggleIpField();
+    dropdown.addEventListener("change", toggleIpField);
+
+    // Nominee 
+    window.addNominee = function () {
+        const stateDropdown = document.getElementById('nomineeStateDropdown');
+        const districtDropdown = document.getElementById('nomineeDistrictDropdown');
+
+        const nominee = {
+            name: document.getElementById('name').value,
+            dob: document.getElementById('dob').value,
+            relationship: document.getElementById('relationship').value,
+            address: document.getElementById('address').value,
+            stateId: stateDropdown.value,
+            stateName: stateDropdown.options[stateDropdown.selectedIndex].text,
+            districtId: districtDropdown.value,
+            districtName: districtDropdown.selectedIndex > 0 ? districtDropdown.options[districtDropdown.selectedIndex].text : "",
+            pincode: document.getElementById('pincode').value,
+            isFamilyMember: document.getElementById('isFamilyMember').value
+        };
+
+        if (!nominee.name || !nominee.dob || !nominee.relationship || !nominee.address || !nominee.stateId || nominee.stateId === "" ||
+            !nominee.districtId || nominee.districtId === "" || !nominee.pincode) {
+            alert("Please fill all required fields!!!");
+            return;
+        }
+
+        nomineeList.push(nominee);
+        rebuildNomineeHiddenInputs();
+        console.log(nomineeList);       
+        renderTable();
+        clearFields();
+    };
+
+
+    function rebuildNomineeHiddenInputs() {
+        const container = document.getElementById("nomineeHiddenFields");
+        container.innerHTML = "";
+
+        nomineeList.forEach((n, i) => {
+            container.insertAdjacentHTML("beforeend", `
+            <input type="hidden" name="NomineeDetails[${i}].Name" value="${escapeHtml(n.name)}" />
+            <input type="hidden" name="NomineeDetails[${i}].Dob" value="${n.dob}" />
+            <input type="hidden" name="NomineeDetails[${i}].Relationship" value="${escapeHtml(n.relationship)}" />
+            <input type="hidden" name="NomineeDetails[${i}].Address" value="${escapeHtml(n.address)}" />
+            <input type="hidden" name="NomineeDetails[${i}].StateId" value="${n.stateId}" />
+            <input type="hidden" name="NomineeDetails[${i}].DistrictId" value="${n.districtId}" />
+            <input type="hidden" name="NomineeDetails[${i}].Pincode" value="${escapeHtml(n.pincode || "")}" />
+            <input type="hidden" name="NomineeDetails[${i}].IsFamilyMember" value="${n.isFamilyMember}" />
+        `);
+        });
+    }
+
+    function renderTable() {
+        debugger;
+        const tbody = document.querySelector(".nomineeTable tbody");
+
+        if (!tbody) {
+            console.error("Table body NOT FOUND!");
+            return;
+        }
+
+        tbody.innerHTML = "";
+
+        nomineeList.forEach((item, index) => {
+            const row = `
+                    <tr>
+                        <td>${item.name}</td>
+                        <td>${item.dob}</td>
+                        <td>${item.relationship}</td>
+                        <td>${item.address}</td>
+                        <td>${item.stateName}</td>
+                        <td>${item.districtName}</td>
+                        <td>${item.pincode}</td>
+                        <td>${item.isFamilyMember}</td>
+                        <td>
+                            <button type="button" onclick="deleteRow(${index})">Delete</button>
+                        </td>
+                    </tr>
+                `;
+            tbody.insertAdjacentHTML("beforeend", row);
+        });
+    }
+
+    window.deleteRow = function (index) {
+        nomineeList.splice(index, 1);
+        rebuildNomineeHiddenInputs();
+        renderTable();
+    };
+
+    // Family 
+    window.addFamily = function () {
+        let photoFile = document.getElementById("familyPhoto").files[0];
+        let proofFile = document.getElementById("proofFile").files[0];
+
+        const familystateDropdown = document.getElementById('familystate');
+        const familydistrictDropdown = document.getElementById('familydistrict');
+
+        let family = {
+            name: document.getElementById("familyName").value,
+            dob: document.getElementById("familyDob").value,
+            relationship: document.getElementById("familyRelationship").value,
+            gender: document.getElementById("familyGender").value,
+            residing: document.getElementById("familyResiding").value,
+            //state: document.getElementById("familystate").value,
+            //district: document.getElementById("familydistrict").value,
+            state: familystateDropdown.selectedIndex > 0 ? familystateDropdown.value : "",
+            stateName: familystateDropdown.selectedIndex > 0 ? familystateDropdown.options[familystateDropdown.selectedIndex].text : "",
+            district: familydistrictDropdown.selectedIndex > 0 ? familydistrictDropdown.value : "",
+            districtName: familydistrictDropdown.selectedIndex > 0 ? familydistrictDropdown.options[familydistrictDropdown.selectedIndex].text : "",
+            photo: photoFile ? photoFile.name : "",
+            proofType: document.getElementById("familyProofType").value,
+            proof: proofFile ? proofFile.name : "",
+
+            photoFileObj: photoFile,
+            proofFileObj: proofFile
+
+        };
+
+        if (!family.name || !family.dob || !family.relationship || !family.gender) {
+            alert("Please fill all required fields");
+            return;
+        }
+
+        if (!photoFile) {
+            alert("Please upload photo");
+            return;
+        }
+
+        if (!family.proofType) {
+            alert("Please select proof type");
+            return;
+        }
+
+        if (!proofFile) {
+            alert("Please upload proof file");
+            return;
+        }
+
+        familyList.push(family);
+
+        photoDT.items.add(photoFile);
+        proofDT.items.add(proofFile);
+
+        document.getElementById("FamilyMemberPhotosInput").files = photoDT.files;
+        document.getElementById("FamilyProofDocsInput").files = proofDT.files;
+
+        rebuildFamilyHiddenInputs();
+        renderFamilyTable();
+        clearFamilyFields();
+    };
+    function rebuildFamilyHiddenInputs() {
+        const container = document.getElementById("familyHiddenFields");
+        container.innerHTML = "";
+
+        photoDT = new DataTransfer();
+        proofDT = new DataTransfer();
+
+        familyList.forEach((f, i) => {
+            container.insertAdjacentHTML("beforeend", `
+            <input type="hidden" name="FamilyParticulars[${i}].Name" value="${escapeHtml(f.name)}" />
+            <input type="hidden" name="FamilyParticulars[${i}].Dob" value="${f.dob}" />
+            <input type="hidden" name="FamilyParticulars[${i}].Relationship" value="${escapeHtml(f.relationship)}" />
+            <input type="hidden" name="FamilyParticulars[${i}].Gender" value="${escapeHtml(f.gender)}" />
+            <input type="hidden" name="FamilyParticulars[${i}].ResidingWith" value="${f.residing}" />
+            <input type="hidden" name="FamilyParticulars[${i}].StateIdofResiding" value="${f.state || ''}" />
+            <input type="hidden" name="FamilyParticulars[${i}].DistrictIdofResiding" value="${f.district || ''}" />
+            <input type="hidden" name="FamilyParticulars[${i}].StateName" value="${f.stateName}" />
+            <input type="hidden" name="FamilyParticulars[${i}].DistrictName" value="${f.districtName}" />
+        `);
+        });
+    }    
+    function renderFamilyTable() {
+
+        let tbody = document.querySelector("#familyTable tbody");
+        tbody.innerHTML = "";
+
+        familyList.forEach((item, index) => {
+
+            let row = `
+            <tr>
+                <td>${item.name}</td>
+                <td>${item.dob}</td>
+                <td>${item.relationship}</td>
+                <td>${item.gender}</td>
+                <td>${item.residing}</td>
+                <td>${item.stateName || ''}</td>
+                <td>${item.districtName || ''}</td>
+                <td>${item.photo}</td>
+                <td>${item.proofType}</td>
+                <td>${item.proof}</td>
+                <td><button onclick="deleteFamilyRow(${index})">Delete</button></td>
+            </tr>
+        `;
+
+            tbody.insertAdjacentHTML("beforeend", row);
+        });
+    }
+
+    let photoDT = new DataTransfer();
+    let proofDT = new DataTransfer();
+    window.deleteFamilyRow = function (index) {
+        familyList.splice(index, 1);
+        rebuildFamilyHiddenInputs(); 
+        renderFamilyTable();
+    };
+
+    const form = document.getElementById("employeeForm");
+    form.addEventListener("submit", function () {
+        rebuildNomineeHiddenInputs();
+        rebuildFamilyHiddenInputs();
+    });
+});
+
+
+function clearFields() {
+    document.getElementById('name').value = "";
+    document.getElementById('dob').value = "";
+    document.getElementById('relationship').value = "";
+    document.getElementById('address').value = "";
+    document.getElementById('nomineeStateDropdown').value = "";
+   // document.getElementById('nomineeDistrictDropdown').value = "";
+    document.getElementById("nomineeDistrictDropdown").innerHTML = '<option value="">-- Select District --</option>';
+    document.getElementById('pincode').value = "";
+    document.getElementById('isFamilyMember').value = "";
+}
+
+document.getElementById("familyResiding").addEventListener("change", function () {
+
+    if (this.value === "No") {
+        document.getElementById("familyStateContainer").style.display = "inline";
+        document.getElementById("familyDistrictContainer").style.display = "inline";
+    } else {
+        document.getElementById("familyStateContainer").style.display = "none";
+        document.getElementById("familyDistrictContainer").style.display = "none";
+    }
+});
+
+
+function escapeHtml(str) {
+    return (str || "").replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+function clearFamilyFields() {
+    //document.querySelectorAll("input, select").forEach(el => {
+    //    if (el.type === "file") {
+    //        el.value = "";
+    //    } else {
+    //        el.value = "";
+    //    }
+    //});
+
+    //document.getElementById("familystate").style.display = "none";
+    //document.getElementById("familydistrict").style.display = "none";
+
+    document.getElementById("familyName").value = "";
+    document.getElementById("familyDob").value = "";
+    document.getElementById("familyRelationship").value = "";
+    document.getElementById("familyGender").value = "";
+    document.getElementById("familyResiding").value = "";
+    document.getElementById("familystate").value = "";
+    document.getElementById("familydistrict").value = "";
+    document.getElementById("familyPhoto").value = "";
+    document.getElementById("familyProofType").value = "";
+    document.getElementById("proofFile").value = "";
+
+    document.getElementById("familyStateContainer").style.display = "none";
+    document.getElementById("familyDistrictContainer").style.display = "none";
+
+}
+
+
+
+
+
+//Reset
+function resetForm() {
+    location.reload();
+}

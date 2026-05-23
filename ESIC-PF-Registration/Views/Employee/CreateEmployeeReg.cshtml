@@ -1,0 +1,691 @@
+﻿@model EmployeeRegistrationDTO
+
+@{
+    ViewData["Title"] = "Employee Registration";
+}
+
+<style>
+    body {
+        background: #f4f6f9;
+    }
+
+    .form-container {
+        background: #fff;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .form-header {
+        font-weight: 600;
+        font-size: 22px;
+        margin-bottom: 20px;
+        color: #0d6efd;
+    }
+
+    .form-control, .form-select {
+        border-radius: 8px;
+    }
+
+    .btn-custom {
+        border-radius: 8px;
+        padding: 10px 25px;
+    }
+    /* Disabled fields */
+    input:disabled,
+    select:disabled,
+    textarea:disabled {
+        background-color: #e9ecef !important;
+        color: #6c757d !important;
+        cursor: not-allowed;
+    }
+
+    /* Readonly fields */
+    input[readonly],
+    textarea[readonly] {
+        background-color: #f8f9fa !important;
+        color: #6c757d;
+        cursor: not-allowed;
+    }
+</style>
+
+<div class="container mt-4">
+    <div class="form-container">
+
+        <div class="form-header">Employee Registration <span class="text-danger">(NOTE :- * Required Fields (all the required fields need to be filed up))</span></div>
+
+        <form asp-action="CreateEmployeeReg" method="post" enctype="multipart/form-data" id="employeeForm">
+            @Html.AntiForgeryToken()
+            
+            <div id="nomineeHiddenFields"></div> 
+            <div id="familyHiddenFields"></div>
+            <input type="file" id="FamilyMemberPhotosInput" name="FamilyMemberPhotos" multiple hidden />
+            <input type="file" id="FamilyProofDocsInput" name="FamilyProofDocs" multiple hidden />
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <!-- Personal Info -->
+            <div class="row">
+                <h3>Personal Information</h3>
+            </div>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label>Insured Person Number: (if already have)</label>
+                    <select asp-for="IsEsicAvailable" class="form-control" id="esicDropdown">
+                        <option value="">--Select--</option>
+                        <option value="1">Yes</option>
+                        <option value="0">No</option>
+                    </select>
+                    <span asp-validation-for="IsEsicAvailable" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-4 mb-3" id="ipBlock" style="display:none;">
+                    <label>IP Number</label>
+                    <input asp-for="IpNumber" class="form-control" />
+                    <span asp-validation-for="IpNumber" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label>Is IP Disabled: <span class="text-danger">*</span></label>
+                    <select asp-for="IsEsicDisabled" class="form-control">
+                        <option value="">--Select--</option>
+                        <option value="1">Yes</option>
+                        <option value="0">No</option>
+                    </select>
+                    <span asp-validation-for="IsEsicDisabled" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label>Type of Disability:</label>
+                    <input asp-for="TypeOfDisability" class="form-control" />
+                    <span asp-validation-for="TypeOfDisability" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label> Name of IP: <span class="text-danger">*</span> (as per aadhar)</label>
+                    <input asp-for="Name" class="form-control" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label> FATHER/ HUSBAND <span class="text-danger">*</span></label>
+                    <select asp-for="FatherOrHusband" class="form-control">
+                        <option value="">--Select--</option>
+                        <option value="Father">Father</option>
+                        <option value="Husband">Husband</option>
+                    </select>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label>Name of <span class="text-danger">*</span> (FATHER/ HUSBAND)</label>
+                    <input asp-for="FatherOrHusbandName" class="form-control" />
+                    <span asp-validation-for="FatherOrHusbandName" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label>Date of Birth: <span class="text-danger">*</span>(as per aadhar)</label>
+                    <input asp-for="Dob" type="date" class="form-control" />
+                    <span asp-validation-for="Dob" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label> Marital Status: <span class="text-danger">*</span></label>
+                    <select asp-for="MaritalStatus" class="form-control">
+                        <option value="">--Select--</option>
+                        <option value="Married">Married</option>
+                        <option value="Unmarried">Unmarried</option>
+                        <option value="Widowed">Widowe/Widowerd</option>
+                        <option value="Divorced">Divorcee</option>
+                    </select>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label> Gender: <span class="text-danger">*</span></label>
+                    <select asp-for="Gender" class="form-control">
+                        <option value="">--Select--</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Transgender">Transgender</option>
+                    </select>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label>Aadhar no. with copy of E Aadhar</label>
+                    <input asp-for="AadhaarNo" class="form-control" />
+                    <span asp-validation-for="AadhaarNo" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label>Upload Aadhaar</label>
+                    <input type="file" name="AadhaarFile" class="form-control" asp-for="AadhaarFile" />
+                    <p class="text-danger">Note : Please upload the latest e-Aadhaar in PDF format downloaded from the UIDAI portal. The file must not be password-protected</p>
+                    <span asp-validation-for="AadhaarFile" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label>PAN no. with copy of PAN card</label>
+                    <input asp-for="PanNo" class="form-control" />
+                    <span asp-validation-for="PanNo" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label>Upload PAN</label>
+                    <input type="file" name="PanFile" class="form-control" asp-for="PanFile" />
+                    <p class="text-danger">Note : Photo size should be between 50 KB to 100 KB in JPG, JPEG Format only.</p>
+                    <span asp-validation-for="PanFile" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label>Self Photo required in Soft copy</label>
+                    <input type="file" name="PhotoFile" class="form-control" asp-for="PhotoFile" />
+                    <p class="text-danger">Note : Photo size should be between 50 KB to 100 KB in JPG, JPEG Format only.</p>
+                    <span asp-validation-for="PhotoFile" class="text-danger"></span>
+                </div>
+
+
+
+            </div>
+            <!-- Address Details -->
+
+            <div class="row">
+                <h3>Address Details</h3>
+            </div>
+
+            <div class="row">
+                <span class="text-dark">Present Address</span>
+                <div class="col-md-4 mb-3">
+                    <label>Address <span class="text-danger">*</span>:</label>
+                    <input asp-for="EmpAddresses.PstAddress" class="form-control" id="presentAddress" />
+                    <span asp-validation-for="EmpAddresses.PstAddress" class="text-danger"></span>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label>State <span class="text-danger">*</span>:</label>
+                    <select asp-for="EmpAddresses.PstStateId"
+                            asp-items="Model.StateList"
+                            class="form-select stateDropdown" data-target="presentdistrictDropdown" id="presentstateDropdown">
+                        <option value="">-- Select State --</option>
+                    </select>
+                    <span asp-validation-for="EmpAddresses.PstStateId" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label>District <span class="text-danger">*</span>:</label>
+                    <select asp-for="EmpAddresses.PstDistrictId"
+                            class="form-select"
+                            id="presentdistrictDropdown">
+                        <option value="">-- Select District --</option>
+                    </select>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label>Pin Code: </label>
+                    <input asp-for="EmpAddresses.PstPinCode" class="form-control" id="presentPinCode" />
+                    <span asp-validation-for="EmpAddresses.PstPinCode" class="text-danger" id="presentPinCodeValidation"></span>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label>Personal Mobile No.<span class="text-danger">*</span> : </label>
+                    <input asp-for="EmpAddresses.PstMobile" type="number" class="form-control" id="presentMobile" />
+                    <span asp-validation-for="EmpAddresses.PstMobile" class="text-danger" id="presentMobileValidation"></span>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label>Personal Email.<span class="text-danger">*</span> : </label>
+                    <input asp-for="EmpAddresses.PstEmail" type="email" class="form-control" id="presentEmail" />
+                    <span asp-validation-for="EmpAddresses.PstEmail" class="text-danger" id="presentEmailValidation"></span>
+                </div>
+
+
+            </div>
+
+            <div class="row">
+                <div class="form-check mt-2">
+                    <input type="checkbox" class="form-check-input" id="sameAddressCheck">
+                    <label class="form-check-label">
+                        Same as Present Address
+                    </label>
+                </div>
+            </div>
+
+            <div class="row">
+                <span class="text-dark">Permanent Address</span>
+                <div class="col-md-4 mb-3">
+                    <label>Address <span class="text-danger">*</span>:</label>
+                    <input asp-for="EmpAddresses.PmtAddress" class="form-control" id="permanentAddress" />
+                    <span asp-validation-for="EmpAddresses.PmtAddress" class="text-danger"></span>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label>State <span class="text-danger">*</span>:</label>
+                    <select asp-for="EmpAddresses.PmtStateId"
+                            asp-items="Model.StateList" id="permanentstateDropdown"
+                            class="form-select stateDropdown" data-target="permanentdistrictDropdown">
+                        <option value="">-- Select State --</option>
+                    </select>
+                    <span asp-validation-for="EmpAddresses.PmtStateId" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label>District <span class="text-danger">*</span>:</label>
+                    <select asp-for="EmpAddresses.PmtDistrictId"
+                            class="form-select"
+                            id="permanentdistrictDropdown">
+                        <option value="">-- Select District --</option>
+                    </select>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label>Pin Code: </label>
+                    <input asp-for="EmpAddresses.PmtPinCode" class="form-control" id="permanentPinCode" />
+                    <span asp-validation-for="EmpAddresses.PmtPinCode" class="text-danger" id="permanentPinCodeValidation"></span>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label>Residence  Mobile No.<span class="text-danger">*</span> : </label>
+                    <input asp-for="EmpAddresses.PmtMobile" type="number" class="form-control" id="permanentMobile" />
+                    <span asp-validation-for="EmpAddresses.PmtMobile" class="text-danger" id="permanentMobileValidation"></span>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label>Email<span class="text-danger">*</span> : </label>
+                    <input asp-for="EmpAddresses.PmtEmail" type="email" class="form-control" id="permanentEmail" />
+                    <span asp-validation-for="EmpAddresses.PmtEmail" class="text-danger" id="permanentEmailValidation"></span>
+                </div>
+            </div>
+            <!-- #endregion -->
+            <!-- Dispensary -->
+            <hr />
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label>Dispensary Or IMP or mEUD For IP: </label>
+                    <input asp-for="DispenseryDetails.DispensaryOrImpormEudforIp" class="form-control" />
+                    <span asp-validation-for="DispenseryDetails.DispensaryOrImpormEudforIp" class="text-danger"></span>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label>State: </label>
+                    <select asp-for="DispenseryDetails.StateIdForIp" asp-items="Model.StateList" class="form-select stateDropdown" data-target="dispensaryDistrictDropdown">
+                        <option value="">-- Select State --</option>
+                    </select>
+                    <span asp-validation-for="DispenseryDetails.StateIdForIp" class="text-danger"></span>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label>District:</label>
+                    <select asp-for="DispenseryDetails.DistrictIdForIp" class="form-select" id="dispensaryDistrictDropdown">
+                        <option value="">-- Select District --</option>
+                    </select>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label>Name of ESIC Dispensary/ IMP/ mEUD For IP: </label>
+                    <input asp-for="DispenseryDetails.DispensaryNameForIp" class="form-control" />
+                    <span asp-validation-for="DispenseryDetails.DispensaryNameForIp" class="text-danger"></span>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label>Dispensary Or IMP or mEUD For Family Members: </label>
+                    <input asp-for="DispenseryDetails.DispensaryOrImpormEudforFamily" class="form-control" />
+                    <span asp-validation-for="DispenseryDetails.DispensaryOrImpormEudforFamily" class="text-danger"></span>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label>State: </label>
+                    <select asp-for="DispenseryDetails.StateIdForFamily" asp-items="Model.StateList" class="form-select stateDropdown"
+                            data-target="dispensaryDistrictDropdownForFamily">
+                        <option value="">-- Select State --</option>
+                    </select>
+                    <span asp-validation-for="DispenseryDetails.StateIdForFamily" class="text-danger"></span>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label>District:</label>
+                    <select asp-for="DispenseryDetails.DistrictIdForFamily" class="form-select" id="dispensaryDistrictDropdownForFamily">
+                        <option value="">-- Select District --</option>
+                    </select>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label>Name of ESIC Dispensary/ IMP/ mEUD For Family Members: </label>
+                    <input asp-for="DispenseryDetails.DispensaryNameForFamily" class="form-control" />
+                    <span asp-validation-for="DispenseryDetails.DispensaryNameForFamily" class="text-danger"></span>
+                </div>
+            </div>
+
+            <!-- #endregion -->
+            <!-- #Employement Details -->
+
+            <div class="row">
+                <h4>Current Employer's Particulars</h4>
+                <div class="col-md-4 mb-3">
+                    <label>Date of Appointment:<span class="text-danger">*</span> (DOJ) </label>
+                    <input asp-for="EmploymentDetails.DojofCurrentEmployer" type="date" class="form-control" />
+                    <span asp-validation-for="EmploymentDetails.DojofCurrentEmployer" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="row">
+                <h4>Have Previous Employer:</h4>
+                <h5>In case of any Previous employment please fill up the details below:</h5>
+            </div>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label>Employer's Code No:</label>
+                    <input asp-for="EmploymentDetails.EmployerCode" class="form-control" />
+                    <span asp-validation-for="EmploymentDetails.EmployerCode" class="text-danger"></span>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label>Previous Insurance No:</label>
+                    <input asp-for="EmploymentDetails.PreviousInsuarenceNo" class="form-control" />
+                    <span asp-validation-for="EmploymentDetails.PreviousInsuarenceNo" class="text-danger"></span>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label>Name of the Employer:</label>
+                    <input asp-for="EmploymentDetails.EmployerName" class="form-control" />
+                    <span asp-validation-for="EmploymentDetails.EmployerName" class="text-danger"></span>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label>Address of Employer:</label>
+                    <input asp-for="EmploymentDetails.EmployerAddress" class="form-control" />
+                    <span asp-validation-for="EmploymentDetails.EmployerAddress" class="text-danger"></span>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label>State:</label>
+                    <select asp-for="EmploymentDetails.StateId"
+                            asp-items="Model.StateList"
+                            class="form-select stateDropdown" data-target="employmentDistrictDropdown">
+                        <option value="">-- Select State --</option>
+                    </select>
+                    <span asp-validation-for="EmploymentDetails.StateId" class="text-danger"></span>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label>District:</label>
+                    <select asp-for="EmploymentDetails.DistrictId"
+                            class="form-select" id="employmentDistrictDropdown">
+                        <option value="">-- Select District --</option>
+                    </select>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label>Pin Code:</label>
+                    <input asp-for="EmploymentDetails.Pincode" class="form-control" />
+                    <span asp-validation-for="EmploymentDetails.Pincode" class="text-danger"></span>
+                </div>
+            </div>
+
+            <!-- #endregion -->
+            <!-- #Nominee Details -->
+            <div class="row">
+                <h4>Details of Nominee :<span class="text-danger">*</span></h4>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label>Name:<span class="text-danger">*</span></label>
+                    <input type="text" id="name" class="form-control">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label>Date of Birth:<span class="text-danger">*</span></label>
+                    <input type="date" id="dob" class="form-control" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label>Relationship with Insured Person :<span class="text-danger">*</span> </label>
+                    <select id="relationship" class="form-select">
+                        <option value="">-- Select Relationship --</option>
+                        <option value="Spouse">Spouse</option>
+                        <option value="Minor dependant son">Minor dependant son</option>
+                        <option value="Dependant unmarried daughter">Dependant unmarried daughter</option>
+                        <option value="Dependant son receiving education">Dependant son receiving education</option>
+                        <option value="Dependant infirm son">Dependant infirm son</option>
+                        <option value="Dependant infirm unmarried daughter">Dependant infirm unmarried daughter</option>
+                        <option value="Dependant father">Dependant father</option>
+                        <option value="Dependant mother">Dependant mother</option>
+                        <option value="Brother">Brother</option>
+                        <option value="Sister">Sister</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label>Address:<span class="text-danger">*</span> </label>
+                    <input type="text" id="address" class="form-control" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label>State <span class="text-danger">*</span></label>
+                    <select id="nomineeStateDropdown" class="form-select stateDropdown" data-target="nomineeDistrictDropdown">
+                        <option value="">-- Select State --</option>
+                        @foreach (var state in Model.StateList)
+                        {
+                            <option value="@state.Value">@state.Text</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label>District <span class="text-danger">*</span></label>
+                    <select id="nomineeDistrictDropdown" class="form-select">
+                        <option value="">-- Select District --</option>
+                    </select>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label>Pincode</label>
+                    <input type="number" id="pincode" class="form-control" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label>Is Nominee a Family Member </label>
+                    <select id="isFamilyMember" class="form-select">
+                        <option value="">-- Select --</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                    </select>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="d-flex justify-content-left pt-4 ">
+                        <button type="button" class="btn btn-primary btn-sm w-auto" onclick="addNominee()">
+                            Add
+                        </button>
+                    </div>
+                </div>
+                @* <button type="button" class="btn btn-sm btn-success" onclick="addNominee()">Add</button> *@
+
+            </div>
+
+            <div class="row">
+                <table class="table table-bordered  nomineeTable">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>DOB</th>
+                            <th>Relationship</th>
+                            <th>Address</th>
+                            <th>State Name</th>
+                            <th>District Name</th>
+                            <th>Pincode</th>
+                            <th>Is Nominee a Family Member</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <!-- #endregion -->
+            <!-- #Family Particulars -->
+            <div class="row">
+                <h4>Family Particulars of Insured Person:</h4>
+            </div>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label>Name:<span class="text-danger">*</span></label>
+                    <input type="text" id="familyName" class="form-control" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label>Date of Birth:<span class="text-danger">*</span></label>
+                    <input type="date" id="familyDob" class="form-control" />
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label>Relationship with Insured Person :<span class="text-danger">*</span> </label>
+                    <select id="familyRelationship" class="form-select">
+                        <option value="">-- Select Relationship --</option>
+                        <option value="Spouse">Spouse</option>
+                        <option value="Minor dependant son">Minor dependant son</option>
+                        <option value="Dependant unmarried daughter">Dependant unmarried daughter</option>
+                        <option value="Dependant son receiving education">Dependant son receiving education</option>
+                        <option value="Dependant infirm son">Dependant infirm son</option>
+                        <option value="Dependant infirm unmarried daughter">Dependant infirm unmarried daughter</option>
+                        <option value="Dependant father">Dependant father</option>
+                        <option value="Dependant mother">Dependant mother</option>
+                        <option value="Brother">Brother</option>
+                        <option value="Sister">Sister</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label>Gender:<span class="text-danger">*</span></label>
+                    <select id="familyGender" class="form-select">
+                        <option value="">-- Select --</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Transgender">Transgender</option>
+                    </select>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label>Whether Residing with Him / Her?:<span class="text-danger">*</span></label>
+                    <select id="familyResiding" class="form-select">
+                        <option value="">-- Select --</option>
+                        <option value="Yes">Yes</option>
+                        <option value="No">No</option>
+                    </select>
+                </div>
+                <div class="col-md-4 mb-3" id="familyStateContainer" style="display:none;">
+                    <label>If Residing is "No" then mentioned State of Residing</label>
+                    <select id="familystate" data-target="familydistrict" class="form-select stateDropdown">
+                        <option value="">-- Select State --</option>
+                        @foreach (var state in Model.StateList)
+                        {
+                            <option value="@state.Value">@state.Text</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4 mb-3" id="familyDistrictContainer" style="display:none;">
+                    <label>If Residing is "No" then mentioned District of Residing</label>
+                    <select id="familydistrict" class="form-select">
+                        <option value="">-- Select District --</option>
+                    </select>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label>Family Member Photo required in Soft copy<span class="text-danger">*</span></label>
+                    <input type="file" id="familyPhoto" />
+                    <p class="text-danger">Note : Photo size should be between 50 KB to 100 KB in JPG, JPEG Format only.</p>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label>Type of Proof required in Soft copy<span class="text-danger">*</span></label> 
+                    <select id="familyProofType" class="form-select">
+                        <option value="">-- Select Proof Type --</option>
+                        <option>Driving License</option>
+                        <option>PAN Card</option>
+                        <option>Passport</option>
+                        <option>Ration Card</option>
+                        <option>Voter ID</option>
+                        <option>BPL Certificate</option>
+                        <option>Birth Certificate</option>
+                        <option>Death Certificate</option>
+                        <option>Passbook/Chequebook</option>
+                    </select>
+                    <p class="text-danger">Note: Document type allowed pdf, jpg & jpeg.  & Max size of the documents should be 200KB.</p>
+
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="d-flex justify-content-left pt-4 ">
+                        <input type="file" id="proofFile" />
+                    </div>                    
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="d-flex justify-content-left pt-4 ">
+                        <button type="button" class="btn btn-primary btn-sm w-auto" onclick="addFamily()">
+                            Add
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <table id="familyTable" class="table table-bordered pt-3">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Date of Birth</th>
+                            <th>Relationship with the Employee</th>
+                            <th>Gender</th>
+                            <th>Whether Residing with Him / Her?</th>
+                            <th>If Residing is "No" then mentioned State of Residing</th>
+                            <th>If Residing is "No" then mentioned District of Residing</th>
+                            <th>Family Member Photo required in Soft copy</th>
+                            <th>Type of Proof required in Soft copy</th>
+                            <th>Proof</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+
+            </div>
+
+            <!-- #endregion -->
+            <!-- #bank Detaiks -->
+            <div class="row">
+                <h4>Details of Bank Accounts of Employee:</h4>
+            </div>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label>Account Number <span class="text-danger">*</span></label>
+                    <input asp-for="EmpBankDetails.AccountNumber" class="form-control" />
+                    <span asp-validation-for="EmpBankDetails.AccountNumber" class="text-danger"></span>
+                    <p class="text-danger">Note: Bank Supporting Document type allowed pdf, jpg & jpeg.  & Max size of the documents should be 200KB.</p>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label>Type Of Account  <span class="text-danger">*</span></label>
+                    <select asp-for="EmpBankDetails.TypeofAccount" class="form-control">
+                        <option value="">--Select--</option>
+                        <option value="Savings">Savings</option>
+                        <option value="Current">Current</option>
+                    </select>
+                    <span asp-validation-for="EmpBankDetails.TypeofAccount" class="text-danger"></span>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label>Name Of Bank <span class="text-danger">*</span></label>
+                    <input asp-for="EmpBankDetails.BankName" class="form-control" />
+                    <span asp-validation-for="EmpBankDetails.BankName" class="text-danger"></span>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label>Name Of Branch <span class="text-danger">*</span></label>
+                    <input asp-for="EmpBankDetails.BranchName" class="form-control" />
+                    <span asp-validation-for="EmpBankDetails.BranchName" class="text-danger"></span>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label>MICR Code of the Bank/Branch</label>
+                    <input asp-for="EmpBankDetails.Micr" class="form-control" />
+                    <span asp-validation-for="EmpBankDetails.Micr" class="text-danger"></span>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label>IFSC Code of the Bank/Branch<span class="text-danger">*</span></label>
+                    <input asp-for="EmpBankDetails.Ifsc" class="form-control" />
+                    <span asp-validation-for="EmpBankDetails.Ifsc" class="text-danger"></span>
+                </div>
+            </div>
+
+
+            <!-- #endregion -->
+            <!-- Buttons -->
+            <div class="mt-3">
+                <button type="submit" class="btn btn-primary btn-custom">Submit</button>
+                <button type="button" class="btn btn-secondary btn-custom" onclick="resetForm()">Reset</button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+
+
+
+@section Scripts {
+
+    @if (TempData["Message"] != null)
+    {
+        <script>
+            alert("@TempData["Message"]");
+        </script>
+    }
+
+    <script src="~/js/employee.js"></script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
