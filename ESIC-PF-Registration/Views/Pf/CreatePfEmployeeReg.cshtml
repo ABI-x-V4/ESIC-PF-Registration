@@ -1,0 +1,283 @@
+﻿@model PfRegistrationDTO
+
+@{
+    ViewData["Title"] = "Employee PF Registration";
+}
+
+<div class="container pf-page">
+
+
+    <div class="row">
+        <div class="er-main-heading">
+            <div class="er-mh-icon"><i class="ri-user-add-line"></i></div>
+            <div class="er-mh-text">
+                <h1>PF REGISTRATION</h1>
+
+            </div>
+            <span class="er-required-badge"><i class="ri-error-warning-line"></i> * Required Fields</span>
+        </div>
+    </div>
+    <form asp-action="CreatePfEmployeeReg" method="post" enctype="multipart/form-data" id="employeePFForm">
+        <div class="row">
+        <div class="pf-card px-0">
+            <div class="pf-card-header">
+                <i class="ri-fingerprint-line"></i>
+                <h2>Aadhaar Details</h2>
+            </div>
+
+            <div class="pf-card-body">
+
+                <div class="row g-3">
+
+                    <div class="col-md-6">
+                        <div class="pf-form-group">
+                            <label class="pf-label">UAN Number <span class="er-req">*</span></label>
+                            <input asp-for="Uan" class="pf-control" placeholder="Enter 12-digit UAN" oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
+                            <span asp-validation-for="Uan" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="pf-form-group">
+                            <label class="pf-label">Full Name <span class="er-req">*</span></label>
+                            <input asp-for="AadhaarFullName" class="pf-control" placeholder="As per Aadhaar" />
+                            <span asp-validation-for="AadhaarFullName" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="pf-form-group">
+                            <label class="pf-label">Date of Birth <span class="er-req">*</span></label>
+                            <input asp-for="AadhaarDob" type="date" class="pf-control" />
+                            <span asp-validation-for="AadhaarDob" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="pf-form-group">
+                            <label class="pf-label">Gender <span class="er-req">*</span></label>
+                            <select asp-for="AadhaarGender" class="pf-control er-control">
+                                    <option value="">Select</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Transgender">Transgender</option>
+                            </select>
+                            <span asp-validation-for="AadhaarGender" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="pf-form-group">
+                            <label class="pf-label">Aadhaar Number <span class="er-req">*</span></label>
+                            <input asp-for="AadhaarNo" class="pf-control" placeholder="12-digit Aadhaar" />
+                            <span asp-validation-for="AadhaarNo" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                        <div class="col-12">
+                            <div class="pf-form-group">
+                                <label class="pf-label">Upload Aadhaar PDF <span class="er-req">*</span></label>
+                                <div class="pf-file-zone">
+                                    <label class="pf-file-btn" for="aadhaarFile">
+                                        <i class="ri-upload-cloud-line"></i> Choose File
+                                    </label>
+                                    <input type="file" id="aadhaarFile" name="aadhaarFile" class="er-control" asp-for="AadhaarFile" accept=".pdf" />
+                                    <span id="aadhaarText">No file selected</span>
+                                </div>
+                            </div>
+                            <div class="er-note">
+                                <i class="ri-information-line"></i>
+                                Note : Please upload the latest e-Aadhaar in PDF format
+                                downloaded from the UIDAI portal. The file must not be
+                                password-protected
+
+                            </div>
+                        </div>
+
+                </div>
+
+            </div>
+        </div>
+
+        <!-- PAN Card -->
+        <div class="pf-card px-0">
+            <div class="pf-card-header">
+                <i class="ri-bank-card-line"></i>
+                <h2>PAN Details</h2>
+            </div>
+
+            <div class="pf-card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="pf-form-group">
+                            <label class="pf-label">Full Name <span class="er-req">*</span></label>
+                            <input asp-for="PanFullName" class="pf-control" placeholder="As per PAN" />
+                            <span asp-validation-for="PanFullName" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="pf-form-group">
+                            <label class="pf-label">Date of Birth <span class="er-req">*</span></label>
+                            <input asp-for="PanDob" type="date" class="pf-control" />
+                            <span asp-validation-for="PanDob" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="pf-form-group">
+                            <label class="pf-label">Gender <span class="er-req">*</span></label>
+                            <select asp-for="PanGender" class="pf-control er-control">
+                                    <option value="">Select</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Transgender">Transgender</option>
+                            </select>
+                            <span asp-validation-for="PanGender" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="pf-form-group">
+                            <label class="pf-label">PAN Number <span class="er-req">*</span></label>
+                            <input asp-for="PanNo" class="pf-control" placeholder="ABCDE1234F" />
+                            <span asp-validation-for="PanNo" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="pf-form-group">
+                            <label class="pf-label">Upload PAN Copy <span class="er-req">*</span></label>
+
+                            <div class="pf-file-zone">
+                                <label class="pf-file-btn" for="panFile">
+                                    <i class="ri-upload-cloud-line"></i> Choose File
+                                </label>
+                                <input type="file" id="panFile" name="panFile" class="er-control" asp-for="PanFile" />
+                                <span id="panText">No file selected</span>
+                            </div>
+                        </div>
+                        <span asp-validation-for="PanFile" class="text-danger"></span>
+                        <div class="er-note">
+                            <i class="ri-information-line"></i>
+                            Note : Please upload the latest PAN card copy in PDF/JPEG
+                            format. The file must not be password-protected
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Personal Information -->
+        <div class="pf-card px-0">
+            <div class="pf-card-header">
+                <i class="ri-user-settings-line"></i>
+                <h2>Personal Information</h2>
+            </div>
+
+            <div class="pf-card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="pf-form-group">
+                            <label class="pf-label">Nationality <span class="er-req">*</span></label>
+                            <input asp-for="Nationality" class="pf-control" />
+                            <span asp-validation-for="Nationality" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="pf-form-group">
+                            <label class="pf-label"> Father's/Husband's Name  <span class="er-req">*</span></label>
+                            <input asp-for="FatherOrHusbandname" class="pf-control" />
+                            <span asp-validation-for="FatherOrHusbandname" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="pf-form-group">
+                            <label class="pf-label">Relation of beside <span class="er-req">*</span></label>
+                            <select asp-for="FatherOrHusband" class="pf-control er-control">
+                                <option value="">Select Relation</option>
+                                <option value="Father">Father</option>
+                                <option value="Husband">Husband</option>
+                            </select>
+                            <span asp-validation-for="FatherOrHusband" class="text-danger"></span>
+                        </div>
+                    </div>
+
+
+                    <div class="col-md-4">
+                        <div class="pf-form-group">
+                            <label class="pf-label">Marital Status <span class="er-req">*</span></label>
+                            <select asp-for="MaritalStatus" class="pf-control er-control">
+                                <option value="">Select Marital Status</option>
+                                <option value="Married">Married</option>
+                                <option value="Unmarried">Unmarried</option>
+                                <option value="Widowed">Widowe/Widowerd</option>
+                                <option value="Divorced">Divorcee</option>
+                            </select>
+                            <span asp-validation-for="MaritalStatus" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="pf-form-group">
+                            <label class="pf-label">Mobile Number <span class="er-req"></span></label>
+                            <input asp-for="MobileNo" class="pf-control" placeholder="10-digit mobile" />
+                            <span asp-validation-for="MobileNo" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="pf-form-group">
+                            <label class="pf-label">Email Address <span class="er-req"></span></label>
+                            <input asp-for="Emailid" class="pf-control" />
+                            <span asp-validation-for="Emailid" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="pf-form-group">
+                            <label class="pf-label">Qualification <span class="er-req"></span></label>
+                            <select asp-for="Qualification" class="pf-control er-control">
+                                <option value="">Select Qualification</option>
+                                <option value="ILLITERATE">ILLITERATE</option>
+                                <option value="NON-MATRIC">NON-MATRIC</option>
+                                <option value="MATRIC">MATRIC</option>
+                                <option value="SENIOR-SECONDARY">SENIOR-SECONDARY</option>
+                                <option value="GRADUATE">GRADUATE</option>
+                                <option value="POST-GRADUATE">POST-GRADUATE</option>
+                                <option value="DOCTORATE">DOCTORATE</option>
+                                <option value="TECHNICAL (PROFESSIONAL)">TECHNICAL (PROFESSIONAL)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="pf-form-group">
+                            <label class="pf-label">Date of Joining <span class="er-req">*</span></label>
+                            <input asp-for="Doj" type="date" class="pf-control" />
+                            <span asp-validation-for="Doj" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+        <div class="pf-save-wrap">
+            <button type="submit" class="pf-btn-save">
+                <i class="ri-save-line"></i>
+                Save Registration
+            </button>
+        </div>
+    </div>
+    </form>
+</div>
+@section Scripts {
+    @if (TempData["Message"] != null)
+    {
+        <script>
+            alert("@TempData["Message"]");
+        </script>
+    }
+    <script src="~/js/pf.js"></script>
+}

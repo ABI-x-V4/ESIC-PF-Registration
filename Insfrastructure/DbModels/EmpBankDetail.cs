@@ -21,5 +21,7 @@ public partial class EmpBankDetail
 
     public string Ifsc { get; set; } = null!;
 
+    public string? BankDoc { get; set; }
+
     public virtual EmployeeRegistration Employee { get; set; } = null!;
 }

@@ -31,7 +31,11 @@ public partial class EsicPfRegistrationDbContext : DbContext
 
     public virtual DbSet<NomineeDetail> NomineeDetails { get; set; }
 
+    public virtual DbSet<PfRegistration> PfRegistrations { get; set; }
+
     public virtual DbSet<State> States { get; set; }
+
+    public virtual DbSet<User> Users { get; set; }
 
 //    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 //#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
@@ -149,6 +153,7 @@ public partial class EsicPfRegistrationDbContext : DbContext
             entity.ToTable("EmployeeRegistration");
 
             entity.Property(e => e.AadhaarNo).HasMaxLength(50);
+            entity.Property(e => e.CreatedDate).HasColumnType("datetime");
             entity.Property(e => e.Dob)
                 .HasColumnType("datetime")
                 .HasColumnName("DOB");
@@ -236,11 +241,63 @@ public partial class EsicPfRegistrationDbContext : DbContext
                 .HasConstraintName("FK_Nominee_State");
         });
 
+        modelBuilder.Entity<PfRegistration>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__PF_Regis__3214EC074AE4C155");
+
+            entity.ToTable("PF_Registration");
+
+            entity.Property(e => e.AadhaarDob)
+                .HasColumnType("datetime")
+                .HasColumnName("Aadhaar_Dob");
+            entity.Property(e => e.AadhaarFullName)
+                .HasMaxLength(200)
+                .HasColumnName("Aadhaar_FullName");
+            entity.Property(e => e.AadhaarGender)
+                .HasMaxLength(20)
+                .HasColumnName("Aadhaar_Gender");
+            entity.Property(e => e.AadhaarNo).HasMaxLength(20);
+            entity.Property(e => e.Doj)
+                .HasColumnType("datetime")
+                .HasColumnName("DOJ");
+            entity.Property(e => e.Emailid).HasMaxLength(100);
+            entity.Property(e => e.FatherOrHusband).HasMaxLength(10);
+            entity.Property(e => e.FatherOrHusbandname).HasMaxLength(100);
+            entity.Property(e => e.MaritalStatus).HasMaxLength(50);
+            entity.Property(e => e.MobileNo)
+                .HasMaxLength(15)
+                .IsUnicode(false);
+            entity.Property(e => e.Nationality).HasMaxLength(50);
+            entity.Property(e => e.PanDob)
+                .HasColumnType("datetime")
+                .HasColumnName("Pan_Dob");
+            entity.Property(e => e.PanFullName)
+                .HasMaxLength(200)
+                .HasColumnName("Pan_FullName");
+            entity.Property(e => e.PanGender)
+                .HasMaxLength(20)
+                .HasColumnName("Pan_Gender");
+            entity.Property(e => e.PanNo).HasMaxLength(20);
+            entity.Property(e => e.Qualification).HasMaxLength(100);
+            entity.Property(e => e.Uan)
+                .HasMaxLength(12)
+                .HasColumnName("UAN");
+        });
+
         modelBuilder.Entity<State>(entity =>
         {
             entity.HasKey(e => e.Id).HasName("PK__States__3214EC073BE29561");
 
             entity.Property(e => e.Name).HasMaxLength(200);
+        });
+
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__Users__3214EC0710FEFBBB");
+
+            entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+            entity.Property(e => e.Password).HasMaxLength(100);
+            entity.Property(e => e.Username).HasMaxLength(50);
         });
 
         OnModelCreatingPartial(modelBuilder);

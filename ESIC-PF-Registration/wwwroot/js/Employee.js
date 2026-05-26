@@ -213,7 +213,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const row = `
                     <tr>
                         <td>${item.name}</td>
-                        <td>${item.dob}</td>
+                        <td>${formatDateToDDMMYYYY(item.dob)}</td>
                         <td>${item.relationship}</td>
                         <td>${item.address}</td>
                         <td>${item.stateName}</td>
@@ -228,6 +228,14 @@ document.addEventListener("DOMContentLoaded", function () {
             tbody.insertAdjacentHTML("beforeend", row);
         });
     }
+    function formatDateToDDMMYYYY(dateStr) {
+        if (!dateStr) return "";
+
+        const parts = dateStr.split('-'); // yyyy-mm-dd
+        if (parts.length !== 3) return dateStr;
+
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
 
     window.deleteRow = function (index) {
         nomineeList.splice(index, 1);
@@ -235,7 +243,36 @@ document.addEventListener("DOMContentLoaded", function () {
         renderTable();
     };
 
-    // Family 
+    // Family
+
+    function validateSelectedFile(file, allowedExtensions, minSizeKB, maxSizeKB, fieldLabel) {
+        if (!file) {
+            alert(`Please upload ${fieldLabel}`);
+            return false;
+        }
+
+        const fileName = file.name.toLowerCase();
+        const extension = fileName.substring(fileName.lastIndexOf('.'));
+        const sizeKB = file.size / 1024;
+
+        if (!allowedExtensions.includes(extension)) {
+            alert(`${fieldLabel} must be in ${allowedExtensions.join(", ").replaceAll(".", "").toUpperCase()} format only.`);
+            return false;
+        }
+
+        if (sizeKB < minSizeKB || sizeKB > maxSizeKB) {
+            if (minSizeKB === 0) {
+                alert(`${fieldLabel} size must not exceed ${maxSizeKB} KB.`);
+            } else {
+                alert(`${fieldLabel} size must be between ${minSizeKB} KB to ${maxSizeKB} KB.`);
+            }
+            return false;
+        }
+
+        return true;
+    }
+
+
     window.addFamily = function () {
         let photoFile = document.getElementById("familyPhoto").files[0];
         let proofFile = document.getElementById("proofFile").files[0];
@@ -284,6 +321,33 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
+        const isPhotoValid = validateSelectedFile(
+            photoFile,
+            [".jpg", ".jpeg"],
+            50,
+            100,
+            "Photo"
+        );
+
+        if (!isPhotoValid) {
+            document.getElementById("familyPhoto").value = "";
+            return;
+        }
+
+        // Proof document validation: PDF/JPG/JPEG only, max 200 KB
+        const isProofValid = validateSelectedFile(
+            proofFile,
+            [".pdf", ".jpg", ".jpeg"],
+            0,
+            200,
+            "Proof document"
+        );
+
+        if (!isProofValid) {
+            document.getElementById("proofFile").value = "";
+            return;
+        }
+
         familyList.push(family);
 
         photoDT.items.add(photoFile);
@@ -327,7 +391,7 @@ document.addEventListener("DOMContentLoaded", function () {
             let row = `
             <tr>
                 <td>${item.name}</td>
-                <td>${item.dob}</td>
+                <td>${formatDateToDDMMYYYY(item.dob)}</td>
                 <td>${item.relationship}</td>
                 <td>${item.gender}</td>
                 <td>${item.residing}</td>
@@ -383,7 +447,6 @@ document.getElementById("familyResiding").addEventListener("change", function ()
     }
 });
 
-
 function escapeHtml(str) {
     return (str || "").replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
@@ -419,7 +482,130 @@ function clearFamilyFields() {
 
 }
 
+document.getElementById("AadhaarFile").addEventListener("change", function () {
 
+    if (this.files.length === 0) return;
+
+    const file = this.files[0];
+    const fileName = file.name;
+    const extension = fileName.split('.').pop().toLowerCase();
+
+    if (extension !== "pdf") {
+        alert("Only PDF files are allowed.");
+
+        this.value = "";
+        return;
+    }
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    document.querySelectorAll(".photo-upload").forEach(function (input) {
+
+        input.addEventListener("change", function () {
+
+            if (this.files.length === 0) return;
+
+            const file = this.files[0];
+            const fileName = file.name;
+            const extension = fileName.split('.').pop().toLowerCase();
+
+            const allowedExtensions = ["jpg", "jpeg"];
+
+            if (!allowedExtensions.includes(extension)) {
+                alert("Only JPG/JPEG files are allowed.");
+
+                this.value = ""; 
+                return;
+            }
+
+            const fileSizeKB = file.size / 1024;
+
+            if (fileSizeKB < 50 || fileSizeKB > 100) {
+                alert("Photo size should be between 50 KB to 100 KB.");
+                this.value = "";
+                return;
+            }
+
+        });
+
+    });
+
+});
+
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    document.querySelectorAll(".file-upload").forEach(function (input) {
+
+        input.addEventListener("change", function () {
+
+            if (this.files.length === 0) return;
+
+            const file = this.files[0];
+            const fileName = file.name;
+            const extension = fileName.split('.').pop().toLowerCase();
+
+            const allowedExtensions = ["pdf", "jpg", "jpeg"];
+
+            if (!allowedExtensions.includes(extension)) {
+                alert("Only PDF, JPG, and JPEG files are allowed.");
+
+                this.value = ""; 
+                return;
+            }
+
+            const fileSizeKB = file.size / 1024;
+
+            if (fileSizeKB > 200) {
+                alert("Max size of the document should be 200 KB.");
+                this.value = "";
+                return;
+            }
+
+        });
+
+    });
+
+});
+
+
+function validateFileInput(input) {
+
+    const file = input.files[0];
+  //  const errorSpan = input.nextElementSibling;
+
+    if (!file) return;
+
+    //errorSpan.innerText = "";
+
+    // ✅ Read config from data attributes
+    const allowedExtensions = input.getAttribute("data-allowed").split(",");
+    const minSizeKB = parseInt(input.getAttribute("data-minsize")); // KB
+    const maxSizeKB = parseInt(input.getAttribute("data-maxsize")); // KB
+
+    // ✅ Extension validation
+    const fileName = file.name.toLowerCase();
+    const fileExtension = fileName.substring(fileName.lastIndexOf('.'));
+
+    if (!allowedExtensions.includes(fileExtension)) {
+        alert(`Allowed formats: ${allowedExtensions.join(", ").replaceAll(".", "").toUpperCase()}`);
+        //errorSpan.innerText = `Allowed formats: ${allowedExtensions.join(", ")}`;
+        input.value = "";
+        return;
+    }
+
+    // ✅ Size validation
+    const fileSizeKB = file.size / 1024;
+
+    if (fileSizeKB < minSizeKB || fileSizeKB > maxSizeKB) {
+        alert(`File size must be between: ${minSizeKB}KB to ${maxSizeKB}KB`);
+        //errorSpan.innerText =
+        //    `File size must be between ${minSizeKB}KB to ${maxSizeKB}KB.`;
+        input.value = "";
+        return;
+    }
+}
 
 
 

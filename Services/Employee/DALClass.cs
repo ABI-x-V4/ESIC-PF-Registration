@@ -241,7 +241,7 @@ namespace Services.Employee
                     }
 
                     employee.IsEsicavailable = dto.IsEsicAvailable;
-                    employee.IsEsicdisabled = dto.IsEsicDisabled;
+                    employee.IsEsicdisabled = dto.IsEsicDisabled!.Value;
                     employee.TypeOfDisability = dto.TypeOfDisability;
                     employee.Name = dto.Name;
                     employee.FatherOrHusband = dto.FatherOrHusband;
@@ -252,13 +252,17 @@ namespace Services.Employee
                     employee.AadhaarNo = dto.AadhaarNo;
                     employee.PanNo = dto.PanNo;
                     employee.PhotoPath = dto.PhotoPath;
+                    employee.IpNumber = dto.IpNumber;
+                    employee.AadhaarPath = dto.AadhaarPath;
+                    employee.PanPath = dto.PanPath;
+                    employee.CreatedDate = DateTime.Now;
                 }
                 else
                 {
                     employee = new EmployeeRegistration
                     {
                         IsEsicavailable = dto.IsEsicAvailable,
-                        IsEsicdisabled = dto.IsEsicDisabled,
+                        IsEsicdisabled = dto.IsEsicDisabled!.Value,
                         TypeOfDisability = dto.TypeOfDisability,
                         Name = dto.Name,
                         FatherOrHusband = dto.FatherOrHusband,
@@ -268,7 +272,11 @@ namespace Services.Employee
                         Gender = dto.Gender,
                         AadhaarNo = dto.AadhaarNo,
                         PanNo = dto.PanNo,
-                        PhotoPath = dto.PhotoPath
+                        PhotoPath = dto.PhotoPath,
+                        IpNumber = dto.IpNumber,
+                        AadhaarPath = dto.AadhaarPath,
+                        PanPath = dto.PanPath,
+                        CreatedDate = DateTime.Now
                     };
 
                     _context.EmployeeRegistrations.Add(employee);
@@ -375,6 +383,7 @@ namespace Services.Employee
                 bank.BranchName = dto.EmpBankDetails.BranchName;
                 bank.Micr = dto.EmpBankDetails.Micr;
                 bank.Ifsc = dto.EmpBankDetails.Ifsc;
+                bank.BankDoc = dto.EmpBankDetails.BankDoc;  
                 #endregion
 
                 #region Nominee

@@ -37,6 +37,8 @@ public partial class EmployeeRegistration
 
     public string? PanPath { get; set; }
 
+    public DateTime? CreatedDate { get; set; }
+
     public virtual ICollection<DispenseryDetail> DispenseryDetails { get; set; } = new List<DispenseryDetail>();
 
     public virtual ICollection<EmpAddress> EmpAddresses { get; set; } = new List<EmpAddress>();

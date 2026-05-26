@@ -1,13 +1,12 @@
 ﻿using DataModels;
-using Insfrastructure.DbModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 using Repository.District;
 using Repository.Employee;
 using Repository.State;
 
-namespace Insfrastructure.DbModels.Controllers
+namespace ESIC_PF_Registration.Controllers
 {
     public class EmployeeController : Controller
     {
@@ -25,6 +24,21 @@ namespace Insfrastructure.DbModels.Controllers
             _istate = istate;
         }
 
+        [Authorize]
+        [HttpGet("GetAllEmpReg")]
+        public async Task<IActionResult> GetAllEmpReg()
+        {
+            var model = await _iemp.GetAllEmp();
+            return View(model);
+        }
+
+        [Authorize]
+        [HttpGet("GetEmpRegById/{id:int}")]
+        public async Task<IActionResult> GetEmpRegById(int id)
+        {
+            var model = await _iemp.GetEmpById(id);
+            return View(model);
+        }
 
         [HttpGet("CreateEmployeeReg")]
         public async Task<IActionResult> CreateEmployeeReg()
@@ -33,7 +47,7 @@ namespace Insfrastructure.DbModels.Controllers
             var states = await _istate.GetAllStates();
             model.StateList = states.Select(s => new SelectListItem
             {
-                Value = s.Id.ToString(),   
+                Value = s.Id.ToString(),
                 Text = s.StateName
             }).ToList();
 
@@ -58,16 +72,16 @@ namespace Insfrastructure.DbModels.Controllers
                     .Select(x => $"{x.Key} => {string.Join(", ", x.Value!.Errors.Select(e => e.ErrorMessage))}")
                     .ToList();
                 TempData["Message"] = string.Join("\\n", errors);
-                return View(model); 
+                return View(model);
             }
 
-            
+
             var result = await _iemp.SaveEmployee(model);
 
             if (result == "Success")
             {
                 TempData["Message"] = "Employee created successfully.";
-                return RedirectToAction(nameof(ThankYouPage)); 
+                return RedirectToAction(nameof(ThankYouPage));
             }
 
             TempData["Message"] = "Failed to create employee.";
@@ -91,11 +105,11 @@ namespace Insfrastructure.DbModels.Controllers
         public async Task<IActionResult> EditEmployeeReg(int id, EmployeeRegistrationDTO model)
         {
             var dto = model;
-            dto.EmployeeId = id;  
+            dto.EmployeeId = id;
 
             await AttachUploadedFilesAsync(dto, model);
 
-            var result = await _iemp.SaveEmployee(dto); 
+            var result = await _iemp.SaveEmployee(dto);
 
             TempData["Message"] = "Success";
             return RedirectToAction("Edit", new { id });
@@ -108,23 +122,23 @@ namespace Insfrastructure.DbModels.Controllers
             return Json(districts);
         }
 
-        private async Task AttachUploadedFilesAsync(EmployeeRegistrationDTO dto, EmployeeRegistrationDTO model )
+        private async Task AttachUploadedFilesAsync(EmployeeRegistrationDTO dto, EmployeeRegistrationDTO model)
         {
             if (model.PhotoFile != null && model.PhotoFile.Length > 0)
             {
-                dto.PhotoPath = await SaveFileAsync(model.PhotoFile, "uploads/employee-photos");
+                dto.PhotoPath = await SaveFileAsync(model.PhotoFile, "uploads/EmployeeReg/employee-photos");
             }
-            
+
             if (model.AadhaarFile != null && model.AadhaarFile.Length > 0)
             {
-                dto.AadhaarPath = await SaveFileAsync(model.AadhaarFile, "uploads/employee-aadhaar");
+                dto.AadhaarPath = await SaveFileAsync(model.AadhaarFile, "uploads/EmployeeReg/employee-aadhaar");
             }
-            
+
             if (model.PanFile != null && model.PanFile.Length > 0)
             {
-                dto.PanPath = await SaveFileAsync(model.PanFile, "uploads/employee-pan");
+                dto.PanPath = await SaveFileAsync(model.PanFile, "uploads/EmployeeReg/employee-pan");
             }
-            
+
             if (dto.FamilyParticulars != null && dto.FamilyParticulars.Count > 0)
             {
                 if (model.FamilyMemberPhotos != null && model.FamilyMemberPhotos.Count > 0)
@@ -137,7 +151,7 @@ namespace Insfrastructure.DbModels.Controllers
                             if (file != null && file.Length > 0)
                             {
                                 dto.FamilyParticulars[i].MemberPhotoPath =
-                                    await SaveFileAsync(file, "uploads/family-member-photos");
+                                    await SaveFileAsync(file, "uploads/EmployeeReg/family-member-photos");
                             }
                         }
                     }
@@ -153,11 +167,15 @@ namespace Insfrastructure.DbModels.Controllers
                             if (file != null && file.Length > 0)
                             {
                                 dto.FamilyParticulars[i].ProofDocPath =
-                                    await SaveFileAsync(file, "uploads/family-proof-docs");
+                                    await SaveFileAsync(file, "uploads/EmployeeReg/family-proof-docs");
                             }
                         }
                     }
-                }
+                }               
+            }
+            if (model.EmpBankDetails.BankDocFile != null && model.EmpBankDetails.BankDocFile.Length > 0)
+            {
+                dto.EmpBankDetails.BankDoc = await SaveFileAsync(model.EmpBankDetails.BankDocFile!, "uploads/EmployeeReg/employee-bankdoc");
             }
         }
 
@@ -184,6 +202,7 @@ namespace Insfrastructure.DbModels.Controllers
 
             return $"{folder.TrimEnd('/')}/{fileName}";
         }
+
 
     }
 }

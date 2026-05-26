@@ -9,7 +9,7 @@ namespace DataModels
         public int EmployeeId { get; set; }        
         public int? IsEsicAvailable { get; set; }
         [Required(ErrorMessage = "Is IP Disabled is required.")]
-        public int IsEsicDisabled { get; set; }
+        public int? IsEsicDisabled { get; set; }
         public string? TypeOfDisability { get; set; }
         [Required(ErrorMessage = "Name of IP is required.")]
         public string Name { get; set; } = null!;
@@ -168,5 +168,8 @@ namespace DataModels
         public string? Micr { get; set; }
         [Required(ErrorMessage = "IFSC is required.")]
         public string Ifsc { get; set; } = null!;
+        public string? BankDoc { get; set; } = null!;
+        [Required(ErrorMessage = "Bank Document is required.")]
+        public IFormFile? BankDocFile { get; set; }
     }
 }

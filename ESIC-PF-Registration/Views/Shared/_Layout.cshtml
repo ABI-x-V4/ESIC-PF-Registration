@@ -5,47 +5,109 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - EMPLOYEE REGISTRATION</title>
   @*   <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" /> *@
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+   
    @*  <link rel="stylesheet" href="~/Insfrastructure.DbModels.styles.css" asp-append-version="true" /> *@
     <link href="~/bootstrap.min.css" rel="stylesheet" />
+    <!-- Remix Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet" />
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">EMPLOYEE REG</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                </div>
+        
+        <nav class="er-navbar">
+            <!-- Logo -->
+            <a class="er-nav-logo" asp-area="" asp-controller="Home" asp-action="Index">
+                <img src="https://www.salescom.in/images/logo-new3.png" alt="Salescom" />
+            </a>
+
+            <!-- Desktop Nav -->
+            <div class="er-nav-center">
+                <ul class="er-nav-menu">
+                    <li><a class="er-active" asp-area="" asp-controller="Home" asp-action="Index"><i class="ri-home-4-line"></i> Home</a></li>
+                    <li><a class="" href="#"><i class="ri-user-add-line"></i> Employee Reg</a></li>
+                    <li><a class="" asp-area="" asp-controller="Home" asp-action="Privacy"><i class="ri-file-list-3-line"></i> Privacy</a></li>
+                   
+                </ul>
             </div>
+
+            <!-- User dropdown -->
+            <div class="dropdown ms-auto">
+                <button class="er-user-btn" data-bs-toggle="dropdown" aria-expanded="false" id="userDropBtn">
+                    <div class="er-user-avatar"><i class="ri-user-3-line"></i></div>
+                    <span class="er-user-name">Admin User</span>
+                    <i class="ri-arrow-down-s-line"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end er-dropdown-menu">
+                    <li><a class="dropdown-item" href="javascript:void(0)"><i class="ri-user-line"></i> Admin User</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item er-logout" href="#"><i class="ri-logout-box-r-line"></i> Sign Out</a></li>
+                </ul>
+            </div>
+
+            <!-- Hamburger (mobile only) -->
+            <button class="er-hamburger ms-2" id="hamburger" aria-label="Toggle menu">
+                <span></span><span></span><span></span>
+            </button>
         </nav>
+
+        <!-- Mobile Drawer -->
+        <div class="er-mobile-drawer" id="mobileDrawer">
+            <ul>
+                <li><a class="er-active" asp-area="" asp-controller="Home" asp-action="Index"><i class="ri-home-4-line"></i> Home</a></li>
+                <li><a href="#"><i class="ri-user-add-line"></i> Employee Registration</a></li>
+                <li><a class="" asp-area="" asp-controller="Home" asp-action="Privacy"><i class="ri-file-list-3-line"></i> Privacy</a></li>
+               
+            </ul>
+        </div>
+
     </header>
-    <div class="container">
+    <div class="container er-page">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
 
     <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - Insfrastructure.DbModels - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        <div class="container text-center">
+            Copyright & Registered Trademarks 2026 Salescom Services Private limited. All Rights Reserved.
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
  @*    <script src="~/js/jquery-3.6.0.min.js"></script> *@
     <script src="~/js/site.js" asp-append-version="true"></script>
+
+
+   
+
+    <script>
+        /* ════════════════════════════════
+           HAMBURGER TOGGLE
+        ════════════════════════════════ */
+        const hamburger = document.getElementById('hamburger');
+        const drawer    = document.getElementById('mobileDrawer');
+        hamburger.addEventListener('click', () => {
+          hamburger.classList.toggle('open');
+          drawer.classList.toggle('open');
+        });
+        // Close drawer on link click
+        drawer.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+          hamburger.classList.remove('open');
+          drawer.classList.remove('open');
+        }));
+        // Close drawer on outside click
+        document.addEventListener('click', e => {
+          if (!hamburger.contains(e.target) && !drawer.contains(e.target)) {
+            hamburger.classList.remove('open');
+            drawer.classList.remove('open');
+          }
+        });
+
+        
+    </script>
     
     @await RenderSectionAsync("Scripts", required: false)
 </body>
