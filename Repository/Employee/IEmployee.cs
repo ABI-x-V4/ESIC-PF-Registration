@@ -6,6 +6,8 @@ namespace Repository.Employee
     {
         Task<List<EmployeeRegistrationDTO>> GetAllEmp();
         Task<EmployeeRegistrationDTO> GetEmpById(int id);
-        Task<string> SaveEmployee(EmployeeRegistrationDTO dto);
+        Task<int> SaveEmployee(EmployeeRegistrationDTO dto);
+        Task<PaginatedResult<EmployeeListRowDto>> GetEmployeesPagedAsync(int page, int pageSize, string? search, string? gender,  string sortBy, string sortDir);
+        Task<byte[]> ExportEmployeeFullReportAsync(EmployeeListRowDto search);
     }
 }

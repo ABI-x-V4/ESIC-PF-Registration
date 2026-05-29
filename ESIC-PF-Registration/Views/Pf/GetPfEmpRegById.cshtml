@@ -1,0 +1,393 @@
+﻿@model PfRegistrationDTO
+
+@{
+    ViewData["Title"] = "Get Employee PF Registration By Id";
+}
+<style>
+
+    .thumbb .img-thumbnail-clickable {
+        cursor: pointer;
+        transition: opacity 0.2s;
+    }
+
+        .thumbb .img-thumbnail-clickable:hover {
+            opacity: 0.8;
+        }
+
+    .thumbb img {
+        height: 100px;
+        width: 100px;
+        object-fit: cover;
+    }
+
+    .b-red {
+        background: red;
+        background-color: red;
+        border: 1px solid #fff;
+        --bs-btn-close-bg: none;
+        opacity: 1;
+        color: #fff;
+        line-height: 15px;
+    }
+
+        .b-red:hover {
+            color: #fff !important;
+            opacity: 1 !important;
+        }
+
+    .pdf-thumbb img {
+        cursor: pointer;
+        transition: opacity 0.2s;
+        height: 100px;
+        width: 100px;
+        object-fit: cover;
+        padding: .25rem;
+        background-color: #fff;
+        border: 1px solid rgb(222 226 230);
+        border-radius: 0.375rem;
+        max-width: 100%;
+    }
+
+</style>
+<div class="container pf-page">
+    <div class="row">
+        <div class="er-main-heading">
+            <div class="er-mh-icon"><i class="ri-user-add-line"></i></div>
+            <div class="er-mh-text">
+                <h1>Employee Registration For PF Portal</h1>
+
+            </div>
+            <span class="er-required-badge"><i class="ri-error-warning-line"></i> * Required Fields</span>
+        </div>
+    </div>
+    <div id="previewBanner" class="pf-preview-banner" style="display:none;">
+        <i class="ri-information-line"></i>
+        Preview Mode: All fields are disabled. Click <strong>Edit</strong> to make changes or <strong>Final Submit</strong> to submit.
+    </div>
+    <form asp-action="CreatePfEmployeeReg" enctype="multipart/form-data" id="employeePFForm">
+      
+        <input asp-for="EmployeeId" type="hidden" />
+
+        <div class="row">
+            <div class="pf-card px-0">
+                <div class="pf-card-header">
+                    <i class="ri-fingerprint-line"></i>
+                    <h2>Aadhaar Details</h2>
+                </div>
+
+                <div class="pf-card-body">
+
+                    <div class="row g-3">
+
+                        <div class="col-md-6">
+                            <div class="pf-form-group">
+                                <label class="pf-label">UAN Number <span class="er-req">*</span></label>
+                                <input asp-for="Uan" class="pf-control" placeholder="Enter 12-digit UAN" oninput="this.value = this.value.replace(/[^0-9]/g, '')" disabled />
+
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="pf-form-group">
+                                <label class="pf-label">Full Name <span class="er-req">*</span></label>
+                                <input asp-for="AadhaarFullName" class="pf-control" placeholder="As per Aadhaar" disabled />
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="pf-form-group">
+                                <label class="pf-label">Date of Birth <span class="er-req">*</span></label>
+                                <input asp-for="AadhaarDob" type="date" class="pf-control" disabled />
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="pf-form-group">
+                                <label class="pf-label">Gender <span class="er-req">*</span></label>
+                                <select asp-for="AadhaarGender" class="pf-control er-control" disabled>
+                                    <option value="">Select</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Transgender">Transgender</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="pf-form-group">
+                                <label class="pf-label">Aadhaar Number <span class="er-req">*</span></label>
+                                <input asp-for="AadhaarNo" class="pf-control" placeholder="12-digit Aadhaar" oninput="this.value = this.value.replace(/[^0-9]/g, '')" disabled />
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="pf-form-group">
+                                <label class="pf-label">Uploaded Aadhaar PDF <span class="er-req">*</span></label>
+                               
+                                @{
+                                    var aadhaarUrl = string.IsNullOrWhiteSpace(Model.Aadhaarpath)
+                                    ? ""
+                                    : Url.Content("~/" + Model.Aadhaarpath.TrimStart('/'));
+
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(Model.Aadhaarpath))
+                                {
+                                    <a href="aadhaarUrl" data-bs-toggle="modal" data-bs-target="#aadhaarModal"
+                                       class="el-act act-view w-50 mt-2" title="View"><i class="ri-eye-line me-1"></i> View</a>
+
+                                    <div class="modal fade" id="aadhaarModal" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered modal-xl">
+                                            <div class="modal-content border-0">
+                                                <div class="modal-body p-0 position-relative text-center">
+                                                    <button type="button"
+                                                            class="btn-close b-red position-absolute top-0 end-0 m-3"
+                                                            data-bs-dismiss="modal"
+                                                            aria-label="Close">
+                                                        <i class="ri-close-line"></i>
+                                                    </button>
+
+                                                    <iframe src="@aadhaarUrl" width="100%" height="600px" style="border:none;"></iframe>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- PAN Card -->
+            <div class="pf-card px-0">
+                <div class="pf-card-header">
+                    <i class="ri-bank-card-line"></i>
+                    <h2>PAN Details</h2>
+                </div>
+
+                <div class="pf-card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="pf-form-group">
+                                <label class="pf-label">Full Name <span class="er-req">*</span></label>
+                                <input asp-for="PanFullName" class="pf-control" placeholder="As per PAN" disabled />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="pf-form-group">
+                                <label class="pf-label">Date of Birth <span class="er-req">*</span></label>
+                                <input asp-for="PanDob" type="date" class="pf-control" disabled />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="pf-form-group">
+                                <label class="pf-label">Gender <span class="er-req">*</span></label>
+                                <select asp-for="PanGender" class="pf-control er-control" disabled>
+                                    <option value="">Select</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Transgender">Transgender</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="pf-form-group">
+                                <label class="pf-label">PAN Number <span class="er-req">*</span></label>
+                                <input asp-for="PanNo" class="pf-control" disabled />
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="pf-form-group">
+                                <label class="pf-label">Uploaded PAN Copy <span class="er-req">*</span></label>
+
+                                @{
+                                    var panPath = Model?.PanPath;
+                                    var panUrl = string.IsNullOrWhiteSpace(panPath) ? "" : Url.Content("~/" + panPath.TrimStart('/'));
+                                    var ext = string.IsNullOrWhiteSpace(panPath) ? "" : System.IO.Path.GetExtension(panPath).ToLowerInvariant();
+
+                                    var isPdf = ext == ".pdf";
+                                    var isImage = ext == ".jpg" || ext == ".jpeg";
+                                    var modalId = "panDocModal";
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(panUrl))
+                                {
+                                    <div class="thumbb">
+
+                                        @if (isImage)
+                                        {
+                                            <a href="@panUrl" data-bs-toggle="modal" data-bs-target="#@modalId"
+                                               class="el-act act-view w-50" title="View"><i class="ri-eye-line me-1"></i> View</a>
+
+                                        }
+                                        else if (isPdf)
+                                        {
+                                            <a href="@panUrl" data-bs-toggle="modal" data-bs-target="#@modalId"
+                                               class="el-act act-view w-50" title="View"><i class="ri-eye-line me-1"></i> View</a>
+                                        }
+                                        else
+                                        {
+                                            <div class="border rounded-3 p-4 shadow-sm d-inline-block">
+                                                <i class="ri-file-2-line" style="font-size:44px;"></i>
+                                                <div class="mt-2 fw-semibold">PAN Document</div>
+                                                <div class="text-muted small">Preview not supported</div>
+                                            </div>
+                                        }
+                                    </div>
+
+                                    @* ---------- MODAL ---------- *@
+                                    <div class="modal fade" id="@modalId" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered @(isPdf ? "modal-xl" : "modal-lg")">
+                                            <div class="modal-content border-0">
+                                                <div class="modal-body p-0 position-relative text-center">
+
+                                                    <button type="button"
+                                                            class="btn-close b-red position-absolute top-0 end-0 m-3"
+                                                            data-bs-dismiss="modal"
+                                                            aria-label="Close">
+                                                        <i class="ri-close-line"></i>
+                                                    </button>
+
+                                                    @if (isImage)
+                                                    {
+                                                        <img src="@panUrl"
+                                                             alt="Bank Document"
+                                                             class="img-fluid rounded" />
+                                                    }
+                                                    else if (isPdf)
+                                                    {
+                                                        <iframe src="@panUrl"
+                                                                style="width:100%; height:80vh; border:0;"
+                                                                title="Bank Document PDF"></iframe>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="p-4">
+                                                            <p class="mb-2">Preview not available for this file type.</p>
+                                                            <a class="btn btn-outline-primary"
+                                                               href="@panUrl"
+                                                               target="_blank" rel="noopener">
+                                                                <i class="ri-download-2-line"></i> Download
+                                                            </a>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+
+
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Personal Information -->
+            <div class="pf-card px-0">
+                <div class="pf-card-header">
+                    <i class="ri-user-settings-line"></i>
+                    <h2>Personal Information</h2>
+                </div>
+
+                <div class="pf-card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="pf-form-group">
+                                <label class="pf-label">Nationality <span class="er-req">*</span></label>
+                                <input asp-for="Nationality" class="pf-control" disabled />
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="pf-form-group">
+                                <label class="pf-label"> Father's/Husband's Name  <span class="er-req">*</span></label>
+                                <input asp-for="FatherOrHusbandname" class="pf-control" disabled />
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="pf-form-group">
+                                <label class="pf-label">Relation of beside <span class="er-req">*</span></label>
+                                <select asp-for="FatherOrHusband" class="pf-control er-control" disabled>
+                                    <option value="">Select Relation</option>
+                                    <option value="Father">Father</option>
+                                    <option value="Husband">Husband</option>
+                                </select>
+                            </div>
+                        </div>
+
+
+                        <div class="col-md-4">
+                            <div class="pf-form-group">
+                                <label class="pf-label">Marital Status <span class="er-req">*</span></label>
+                                <select asp-for="MaritalStatus" class="pf-control er-control" disabled>
+                                    <option value="">Select Marital Status</option>
+                                    <option value="Married">Married</option>
+                                    <option value="Unmarried">Unmarried</option>
+                                    <option value="Widowed">Widowe/Widowerd</option>
+                                    <option value="Divorced">Divorcee</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="pf-form-group">
+                                <label class="pf-label">Mobile Number <span class="er-req"></span></label>
+                                <input asp-for="MobileNo" class="pf-control" placeholder="10-digit mobile" disabled />
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="pf-form-group">
+                                <label class="pf-label">Email Address <span class="er-req"></span></label>
+                                <input asp-for="Emailid" class="pf-control" disabled />
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="pf-form-group">
+                                <label class="pf-label">Qualification <span class="er-req"></span></label>
+                                <select asp-for="Qualification" class="pf-control er-control" disabled>
+                                    <option value="">Select Qualification</option>
+                                    <option value="ILLITERATE">ILLITERATE</option>
+                                    <option value="NON-MATRIC">NON-MATRIC</option>
+                                    <option value="MATRIC">MATRIC</option>
+                                    <option value="SENIOR-SECONDARY">SENIOR-SECONDARY</option>
+                                    <option value="GRADUATE">GRADUATE</option>
+                                    <option value="POST-GRADUATE">POST-GRADUATE</option>
+                                    <option value="DOCTORATE">DOCTORATE</option>
+                                    <option value="TECHNICAL (PROFESSIONAL)">TECHNICAL (PROFESSIONAL)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="pf-form-group">
+                                <label class="pf-label">Date of Joining <span class="er-req">*</span></label>
+                                <input asp-for="Doj" type="date" class="pf-control" disabled />
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="pf-save-wrap">
+                <a href="@Url.Content("~/GetAllPf")" class="er-btn-preview">
+                    <i class="ri-arrow-left-line"></i> Back
+                </a>
+
+            </div>
+        </div>
+    </form>
+</div>
+

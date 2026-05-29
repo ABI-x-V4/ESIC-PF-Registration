@@ -26,10 +26,13 @@ namespace ESIC_PF_Registration.Controllers
 
         [Authorize]
         [HttpGet("GetAllEmpReg")]
-        public async Task<IActionResult> GetAllEmpReg()
+        public async Task<IActionResult> GetAllEmpReg(int page = 1, int pageSize = 5, string? search = null, string? gender = null,
+                                                           string sortBy = "Name", string sortDir = "asc")
         {
-            var model = await _iemp.GetAllEmp();
-            return View(model);
+
+            var result = await _iemp.GetEmployeesPagedAsync(page, pageSize, search, gender, sortBy, sortDir);
+            return View(result);
+
         }
 
         [Authorize]
@@ -76,12 +79,13 @@ namespace ESIC_PF_Registration.Controllers
             }
 
 
-            var result = await _iemp.SaveEmployee(model);
+            var employeeId = await _iemp.SaveEmployee(model);
 
-            if (result == "Success")
+            if (employeeId > 0)
             {
-                TempData["Message"] = "Employee created successfully.";
+                TempData["Message"] = "ESIC Registration Successfull.";
                 return RedirectToAction(nameof(ThankYouPage));
+               // return RedirectToAction("CreatePfEmployeeReg", "Pf", new { employeeId = employeeId });
             }
 
             TempData["Message"] = "Failed to create employee.";
@@ -120,6 +124,21 @@ namespace ESIC_PF_Registration.Controllers
         {
             var districts = await _idist.GetDistrictsByStateId(stateId);
             return Json(districts);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ExportEmployeeExcel(EmployeeListRowDto search)
+        {
+            var fileBytes = await _iemp.ExportEmployeeFullReportAsync(search);
+
+            if (fileBytes == null || fileBytes.Length == 0)
+            {
+                TempData["ErrorMessage"] = "No data found for export.";
+                return RedirectToAction("GetAllEmpReg");
+            }
+
+            string fileName = $"Employee_Report_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+            return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
         }
 
         private async Task AttachUploadedFilesAsync(EmployeeRegistrationDTO dto, EmployeeRegistrationDTO model)
@@ -171,7 +190,7 @@ namespace ESIC_PF_Registration.Controllers
                             }
                         }
                     }
-                }               
+                }
             }
             if (model.EmpBankDetails.BankDocFile != null && model.EmpBankDetails.BankDocFile.Length > 0)
             {

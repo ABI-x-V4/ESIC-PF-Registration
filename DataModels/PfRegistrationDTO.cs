@@ -6,6 +6,7 @@ namespace DataModels
     public class PfRegistrationDTO
     {
         public int Id { get; set; }
+        public int? EmployeeId { get; set; }
         [Required(ErrorMessage = "Full Name is required.")]
         public string AadhaarFullName { get; set; } = null!;
         [Required(ErrorMessage = "Date of Birth is required.")]
@@ -13,6 +14,7 @@ namespace DataModels
         [Required(ErrorMessage = "Gender is required.")]
         public string AadhaarGender { get; set; } = null!;
         [Required(ErrorMessage = "Aadhaar Number is required.")]
+        [RegularExpression(@"^\d{12}$", ErrorMessage = "Aadhaar must be exactly 12 digits")]
         public string AadhaarNo { get; set; } = null!;
         [Required(ErrorMessage = "Full Name is required.")]
         public string PanFullName { get; set; } = null!;
@@ -21,6 +23,7 @@ namespace DataModels
         [Required(ErrorMessage = "Gender is required.")]
         public string PanGender { get; set; } = null!;
         [Required(ErrorMessage = "PAN Number is required.")]
+        [RegularExpression(@"^[A-Z]{5}[0-9]{4}[A-Z]{1}$", ErrorMessage = "Invalid PAN format")]
         public string PanNo { get; set; } = null!;
         [Required(ErrorMessage = "Nationality is required.")]
         public string Nationality { get; set; } = null!;
@@ -44,5 +47,6 @@ namespace DataModels
         public IFormFile AadhaarFile { get; set; } = null!;
         [Required(ErrorMessage = "PAN File is required.")]
         public IFormFile PanFile { get; set; } = null!;
+        public DateTime? CreatedDate { get; set; }
     }
 }

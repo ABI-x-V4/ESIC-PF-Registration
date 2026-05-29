@@ -44,4 +44,10 @@ public partial class PfRegistration
     public string PanPath { get; set; } = null!;
 
     public string Uan { get; set; } = null!;
+
+    public DateTime? CreatedDate { get; set; }
+
+    public int? EmployeeId { get; set; }
+
+    public virtual EmployeeRegistration? Employee { get; set; }
 }

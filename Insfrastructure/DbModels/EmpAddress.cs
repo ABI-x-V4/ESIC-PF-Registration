@@ -33,6 +33,8 @@ public partial class EmpAddress
 
     public string? PmtEmail { get; set; }
 
+    public int? IsSameAddress { get; set; }
+
     public virtual EmployeeRegistration Employee { get; set; } = null!;
 
     public virtual District PmtDistrict { get; set; } = null!;

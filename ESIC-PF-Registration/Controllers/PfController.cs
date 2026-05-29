@@ -1,4 +1,5 @@
 ﻿using DataModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Repository.PF;
 
@@ -14,10 +15,34 @@ namespace ESIC_PF_Registration.Controllers
             _env = env;
         }
 
-        [HttpGet("CreatePfEmployeeReg")]
-        public IActionResult CreatePfEmployeeReg()
+        [Authorize]
+        [HttpGet("GetAllPf")]
+        public async Task<IActionResult> GetAllPf(int page = 1, int pageSize = 5, string? search = null, string? gender = null,
+                                                           string sortBy = "Name", string sortDir = "asc")
         {
-            var model = new PfRegistrationDTO();
+
+            var result = await _ipf.GetPfEmployeesPagedAsync(page, pageSize, search, gender, sortBy, sortDir);
+            return View(result);
+
+        }
+
+        [Authorize]
+        [HttpGet("GetPfEmpRegById/{id:int}")]
+        public async Task<IActionResult> GetPfEmpRegById(int id)
+        {
+            var model = await _ipf.GetPFEmpById(id);
+            return View(model);
+        }
+
+
+        [HttpGet("CreatePfEmployeeReg")]
+        public IActionResult CreatePfEmployeeReg(int employeeId)
+        {
+            var model = new PfRegistrationDTO
+            {
+                EmployeeId = employeeId
+            };
+            
             return View(model);
         }
 
@@ -32,7 +57,7 @@ namespace ESIC_PF_Registration.Controllers
                     .Where(x => x.Value!.Errors.Count > 0)
                     .Select(x => $"{x.Key} => {string.Join(", ", x.Value!.Errors.Select(e => e.ErrorMessage))}")
                     .ToList();
-                TempData["Message"] = string.Join("\\n", errors);
+               
                 return View(model);
             }
 
@@ -46,6 +71,21 @@ namespace ESIC_PF_Registration.Controllers
 
             TempData["Message"] = "Failed to save.";
             return View(model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ExportPfEmployeeExcel(EmployeeListRowDto search)
+        {
+            var fileBytes = await _ipf.ExportPFEmployeeFullReportAsync(search);
+
+            if (fileBytes == null || fileBytes.Length == 0)
+            {
+                TempData["ErrorMessage"] = "No data found for export.";
+                return RedirectToAction("GetAllPf");
+            }
+
+            string fileName = $"Employee_PF_Report_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+            return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
         }
 
         public IActionResult ResultPage()

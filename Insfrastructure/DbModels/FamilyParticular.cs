@@ -27,5 +27,7 @@ public partial class FamilyParticular
 
     public string? ProofDocPath { get; set; }
 
+    public string? TypeOfProof { get; set; }
+
     public virtual EmployeeRegistration Employee { get; set; } = null!;
 }

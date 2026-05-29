@@ -1,57 +1,61 @@
 ﻿@{
     ViewData["Title"] = "Thank You";
-    Layout = null; // No layout for this page
+    Layout = null; 
 }
 
-<style>
-    body {
-        font-family: Arial, sans-serif;
-        background-color: #f4f6f9;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        margin: 0;
-    }
+<main class="ty-page">
+    <div class="ty-card">
 
-    .container {
-        background: #ffffff;
-        padding: 40px;
-        border-radius: 12px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        text-align: center;
-        width: 400px;
-    }
+        <!-- Animated gradient top stripe -->
+        <div class="ty-stripe"></div>
 
-    h1 {
-        color: #28a745;
-        margin-bottom: 10px;
-    }
+        <div class="ty-card-body">
 
-    p {
-        color: #555;
-        margin: 10px 0;
-        font-size: 16px;
-    }
+            <!-- Success Icon with pulse rings -->
+            <div class="ty-icon-wrap">
+                <div class="ty-ring"></div>
+                <div class="ty-ring"></div>
+                <div class="ty-icon-circle">
+                    <i class="ri-check-double-line"></i>
+                </div>
+            </div>
 
-    .btn-home {
-        display: inline-block;
-        margin-top: 20px;
-        padding: 10px 20px;
-        background-color: #007bff;
-        color: #fff;
-        text-decoration: none;
-        border-radius: 6px;
-    }
+            <!-- Status tag -->
+            <div class="ty-tag">
+                <i class="ri-checkbox-circle-fill"></i> Submission Successful
+            </div>
 
-        .btn-home:hover {
-            background-color: #0056b3;
-        }
-</style>
-<div class="container">
-    <h1>✅ Thank You!</h1>
-    <p>Your form has been successfully submitted.</p>
-    <p>If any additional information is required, our team will contact you.</p>
+            <!-- Heading -->
+            <h1 class="ty-heading">Thank You!</h1>
 
-    <a href="/" class="btn-home">Go to Home</a>
-</div>
+            <!-- Sub-message -->
+            <p class="ty-sub">
+                Your form has been successfully submitted.<br />
+                If any additional information is required, our team will contact you.
+            </p>
+
+
+            <div class="ty-divider"></div>
+
+            <!-- Action buttons -->
+            <div class="ty-btn-group">
+                <a href="#" class="ty-btn-home">
+                    <i class="ri-home-4-line"></i> Go to Home
+                </a>
+
+            </div>
+
+        </div>
+
+        <!-- Bottom brand strip -->
+        <div class="ty-brand-strip">
+            <img src="~/images/logo-new3.png" alt="Salescom" />
+            <div class="ty-brand-info">
+                <strong>Employee &amp; PF Registration Portal</strong><br />
+                Your data is encrypted and stored securely.
+            </div>
+
+        </div>
+
+    </div>
+</main>

@@ -378,6 +378,7 @@ document.addEventListener("DOMContentLoaded", function () {
             <input type="hidden" name="FamilyParticulars[${i}].DistrictIdofResiding" value="${f.district || ''}" />
             <input type="hidden" name="FamilyParticulars[${i}].StateName" value="${f.stateName}" />
             <input type="hidden" name="FamilyParticulars[${i}].DistrictName" value="${f.districtName}" />
+            <input type="hidden" name="FamilyParticulars[${i}].TypeOfProof" value="${f.proofType}" />
         `);
         });
     }    
@@ -454,17 +455,7 @@ function escapeHtml(str) {
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
 }
-function clearFamilyFields() {
-    //document.querySelectorAll("input, select").forEach(el => {
-    //    if (el.type === "file") {
-    //        el.value = "";
-    //    } else {
-    //        el.value = "";
-    //    }
-    //});
-
-    //document.getElementById("familystate").style.display = "none";
-    //document.getElementById("familydistrict").style.display = "none";
+function clearFamilyFields() {   
 
     document.getElementById("familyName").value = "";
     document.getElementById("familyDob").value = "";
@@ -607,6 +598,154 @@ function validateFileInput(input) {
     }
 }
 
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const form = document.getElementById("employeeForm");
+    const btnPreview = document.getElementById("btnPreview");
+    const btnEdit = document.getElementById("btnEdit");
+    const btnFinalSubmit = document.getElementById("btnFinalSubmit");
+    const previewBanner = document.getElementById("previewBanner");
+
+    function getControls() {
+        return form.querySelectorAll("input, select, textarea, button");
+    }
+
+    function togglePreview(enable) {
+
+        getControls().forEach(el => {
+            const id = el.id;
+
+            if (
+                el.type === "hidden" ||
+                id === "btnPreview" ||
+                id === "btnEdit" ||
+                id === "btnFinalSubmit"
+            ) return;
+
+            if (enable) {
+                el.setAttribute("disabled", "disabled");
+            } else {
+                el.removeAttribute("disabled");
+            }
+        });
+
+        if (enable) {
+            form.classList.add("preview-mode");
+            previewBanner.style.display = "block";
+            btnPreview.style.display = "none";
+            btnEdit.style.display = "inline-block";
+            btnFinalSubmit.style.display = "inline-block";
+        } else {
+            form.classList.remove("preview-mode");
+            previewBanner.style.display = "none";
+            btnPreview.style.display = "inline-block";
+            btnEdit.style.display = "none";
+            btnFinalSubmit.style.display = "none";
+        }
+    }
+
+    // Preview
+    btnPreview.addEventListener("click", function () {
+
+        if (window.jQuery && $(form).valid) {
+            if (!$(form).valid()) return;
+        } else {
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+        }
+
+        togglePreview(true);
+        window.scrollTo(0, 0);
+    });
+
+    // Edit
+    btnEdit.addEventListener("click", function () {
+        togglePreview(false);
+    });
+
+    // Enable all before final submit
+    form.addEventListener("submit", function () {
+        getControls().forEach(el => {
+            if (el.type !== "button") {
+                el.removeAttribute("disabled");
+            }
+        });
+    });
+
+});
+
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const checkbox = document.getElementById("hasPrevEmployerCheck");
+    const section = document.getElementById("prevEmployerSection");
+
+    if (!checkbox || !section) return;
+
+    function clearControl(el) {
+        const tag = el.tagName.toLowerCase();
+        const type = (el.getAttribute("type") || "").toLowerCase();
+
+        if (type === "hidden") return;
+
+        if (tag === "select") {
+            el.value = "";
+            el.dispatchEvent(new Event("change", { bubbles: true }));
+            return;
+        }
+
+        if (tag === "textarea") {
+            el.value = "";
+            return;
+        }
+
+        if (tag === "input") {
+            if (type === "checkbox" || type === "radio") {
+                el.checked = false;
+            } else if (type === "file") {
+                el.value = "";
+            } else {
+                el.value = "";
+            }
+        }
+    }
+
+    function togglePrevEmployerFields() {
+        const enabled = checkbox.checked;
+
+        const controls = section.querySelectorAll("input, select, textarea, button");
+
+        controls.forEach(el => {
+            if (!enabled) {
+                clearControl(el);
+
+                el.classList.remove("input-validation-error");
+            }
+
+            el.disabled = !enabled;
+        });
+
+       
+        if (!enabled) {
+            section.querySelectorAll(".field-validation-error, .text-danger")
+                .forEach(span => {
+                   
+                    if (span.hasAttribute("data-valmsg-for") || span.classList.contains("field-validation-error")) {
+                        span.textContent = "";
+                    }
+                });
+        }
+
+        section.classList.toggle("is-disabled", !enabled);
+    }
+
+    togglePrevEmployerFields();
+
+    checkbox.addEventListener("change", togglePrevEmployerFields);
+});
 
 
 //Reset

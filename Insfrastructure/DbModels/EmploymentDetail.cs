@@ -11,7 +11,7 @@ public partial class EmploymentDetail
 
     public DateTime DojofCurrentEmployer { get; set; }
 
-    public string? HasPreviousEmployer { get; set; }
+    public int? HasPreviousEmployer { get; set; }
 
     public string? EmployerCode { get; set; }
 

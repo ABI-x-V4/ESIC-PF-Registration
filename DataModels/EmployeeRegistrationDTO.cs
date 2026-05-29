@@ -78,6 +78,13 @@ namespace DataModels
         [Required(ErrorMessage = "Residence Mobile No is required.")]
         public string PmtMobile { get; set; } = null!;
         public string? PmtEmail { get; set; }
+        public int? IsSameAddress { get; set; }
+        public bool IsSameAddressBool
+        {
+            get => (IsSameAddress ?? 0) == 1;
+            set => IsSameAddress = value ? 1 : 0;
+        }
+
     }
     public class DispenseryDetailDTO
     {
@@ -102,7 +109,12 @@ namespace DataModels
         public int EmployeeId { get; set; }
         [Required (ErrorMessage ="Date of Joining of Current Employer is required.")]
         public DateTime? DojofCurrentEmployer { get; set; }
-        public string? HasPreviousEmployer { get; set; }
+        public int? HasPreviousEmployer { get; set; }
+        public bool HasPreviousEmployerBool
+        {
+            get => (HasPreviousEmployer ?? 0) == 1;
+            set => HasPreviousEmployer = value ? 1 : 0;
+        }
         public string? EmployerCode { get; set; }
         public string? PreviousInsuarenceNo { get; set; }
         public string? EmployerName { get; set; }
@@ -152,6 +164,7 @@ namespace DataModels
         public string? DistrictName { get; set; }
         public string? MemberPhotoPath { get; set; }
         public string? ProofDocPath { get; set; }
+        public string TypeOfProof { get; set; } = null!;
     }
     public class EmpBankDetailDTO
     {

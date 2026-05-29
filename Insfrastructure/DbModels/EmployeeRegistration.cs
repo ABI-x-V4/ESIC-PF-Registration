@@ -50,4 +50,6 @@ public partial class EmployeeRegistration
     public virtual ICollection<FamilyParticular> FamilyParticulars { get; set; } = new List<FamilyParticular>();
 
     public virtual ICollection<NomineeDetail> NomineeDetails { get; set; } = new List<NomineeDetail>();
+
+    public virtual ICollection<PfRegistration> PfRegistrations { get; set; } = new List<PfRegistration>();
 }

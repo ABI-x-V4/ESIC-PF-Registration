@@ -19,17 +19,18 @@
         
         <nav class="er-navbar">
             <!-- Logo -->
-            <a class="er-nav-logo" asp-area="" asp-controller="Home" asp-action="Index">
+            <a class="er-nav-logo" href="">
                 <img src="https://www.salescom.in/images/logo-new3.png" alt="Salescom" />
             </a>
 
             <!-- Desktop Nav -->
             <div class="er-nav-center">
                 <ul class="er-nav-menu">
-                    <li><a class="er-active" asp-area="" asp-controller="Home" asp-action="Index"><i class="ri-home-4-line"></i> Home</a></li>
-                    <li><a class="" href="#"><i class="ri-user-add-line"></i> Employee Reg</a></li>
+                    <li><a class="er-active" asp-area="" asp-controller="Employee" asp-action="GetAllEmpReg"><i class="ri-home-4-line"></i> ESIC List</a></li>
+                    <li><a class="" asp-area="" asp-controller="Pf" asp-action="GetAllPf"><i class="ri-user-add-line"></i> PF List</a></li>
+                   @*  <li><a class="" href="#"><i class="ri-user-add-line"></i> Employee Reg</a></li>
                     <li><a class="" asp-area="" asp-controller="Home" asp-action="Privacy"><i class="ri-file-list-3-line"></i> Privacy</a></li>
-                   
+                    *@
                 </ul>
             </div>
 
@@ -37,13 +38,28 @@
             <div class="dropdown ms-auto">
                 <button class="er-user-btn" data-bs-toggle="dropdown" aria-expanded="false" id="userDropBtn">
                     <div class="er-user-avatar"><i class="ri-user-3-line"></i></div>
-                    <span class="er-user-name">Admin User</span>
+                    @(User?.Identity?.IsAuthenticated == true ? User.Identity!.Name : "Guest")
                     <i class="ri-arrow-down-s-line"></i>
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end er-dropdown-menu">
-                    <li><a class="dropdown-item" href="javascript:void(0)"><i class="ri-user-line"></i> Admin User</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item er-logout" href="#"><i class="ri-logout-box-r-line"></i> Sign Out</a></li>
+                <ul class="dropdown-menu dropdown-menu-end er-dropdown-menu">                    
+                    @if(User?.Identity?.IsAuthenticated == true)
+                    {
+                        <li>
+                            <form method="post" asp-area="" asp-controller="Login" asp-action="Logout" class="d-inline">
+                                <button type="submit" class="dropdown-item er-logout">
+                                    <i class="ri-logout-box-r-line"></i> Sign Out
+                                </button>
+                            </form>
+                        </li>
+                    }
+                    else
+                    {
+                        <li>
+                            <a class="dropdown-item er-login" asp-area="" asp-controller="Login" asp-action="Login">
+                                <i class="ri-login-box-line"></i> Sign In
+                            </a>
+                        </li>
+                    }        
                 </ul>
             </div>
 

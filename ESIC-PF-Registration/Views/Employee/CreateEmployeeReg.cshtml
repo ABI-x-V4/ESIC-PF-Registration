@@ -10,14 +10,17 @@
             <div class="er-main-heading">
                 <div class="er-mh-icon"><i class="ri-user-add-line"></i></div>
                 <div class="er-mh-text">
-                    <h1>Employee Registration</h1>
+                    <h1>Employee Registration For ESIC Portal</h1>
                     <p>(NOTE :- * Required Fields (all the required fields need to be filed up))</p>
                 </div>
                 <span class="er-required-badge"><i class="ri-error-warning-line"></i> * Required Fields</span>
             </div>
         </div>
 
-
+        <div id="previewBanner" class="er-preview-banner" style="display:none;">
+            <i class="ri-information-line"></i>
+            Preview Mode: Fields are locked. Click <b>Edit</b> to modify or <b>Final Submit</b> to submit.
+        </div>
         <form asp-action="CreateEmployeeReg" method="post" enctype="multipart/form-data" id="employeeForm">
             @Html.AntiForgeryToken()
 
@@ -93,7 +96,6 @@
                             <div class="col-12 col-sm-6 col-md-4">
                                 <div class="er-form-group">
                                     <label class="er-label">Name of Father / Husband <span class="er-req">*</span></label>
-
                                     <input asp-for="FatherOrHusbandName" class="er-control" />
                                     <span asp-validation-for="FatherOrHusbandName" class="text-danger"></span>
                                 </div>
@@ -138,7 +140,7 @@
                         <div class="row g-3">
                             <div class="col-12 col-md-6">
                                 <div class="er-form-group">
-                                    <label class="er-label">Aadhar no. with copy of E Aadhar</label>
+                                    <label class="er-label">Aadhaar no. with copy of E Aadhaar</label>
 
                                     <input asp-for="AadhaarNo" class="er-control" />
                                     <span asp-validation-for="AadhaarNo" class="text-danger"></span>
@@ -146,7 +148,7 @@
                             </div>
                             <div class="col-12 col-md-6">
                                 <div class="er-form-group">
-                                    <label class="er-label">Upload Aadhaar</label>
+                                    <label class="er-label">Upload E Aadhaar</label>
 
                                     <input type="file" id="AadhaarFile" name="AadhaarFile" class="er-control" asp-for="AadhaarFile" accept=".pdf" />
                                     <div class="er-note"><i class="ri-information-line"></i> Note : Please upload the latest e-Aadhaar in PDF format downloaded from the UIDAI portal. The file must not be password-protected.</div>
@@ -257,7 +259,7 @@
 
                         <label class="er-check-row mt-1">
 
-                            <input type="checkbox" class="form-check-input" id="sameAddressCheck">
+                            <input type="checkbox" class="form-check-input" id="sameAddressCheck" asp-for="EmpAddresses.IsSameAddressBool">
                             <label for="sameAddress"><i class="ri-file-copy-line" style="color:#ff8302"></i> Same as Present Address</label>
 
                         </label>
@@ -422,8 +424,12 @@
                     <div class="er-section-header">
                         <div class="er-sh-icon"><i class="ri-history-line"></i></div>
                         <h2>Have Previous Employer</h2>
+                        <input type="checkbox"
+                               asp-for="EmploymentDetails.HasPreviousEmployerBool"
+                               class="form-check-input"
+                               id="hasPrevEmployerCheck" />
                     </div>
-                    <div class="er-section-body">
+                    <div class="er-section-body" id="prevEmployerSection">
                         <div class="er-tip"><i class="ri-information-line"></i> In case of any Previous employment please fill up the details below:</div>
                         <div class="row g-3">
                             <div class="col-12 col-sm-6 col-md-4">
@@ -492,7 +498,7 @@
                 <div class="er-section-card px-0">
                     <div class="er-section-header">
                         <div class="er-sh-icon"><i class="ri-user-heart-line"></i></div>
-                        <h2>Details of Nominee <span style="color: #ff2a2a;;margin-left:4px;font-size:0.8rem;">*</span></h2>
+                        <h2>Details of Nominee <span style="color: #ff2a2a;margin-left:4px;font-size:0.8rem;">*</span></h2>
                     </div>
                     <div class="er-section-body">
                         <div class="row g-3">
@@ -695,15 +701,15 @@
                                     <label class="er-label">Type of Proof required <span class="er-req">*</span> <span class="text-muted" style="text-transform:none;font-weight:400;font-size:0.7rem;">(Soft Copy)</span></label>
                                     <select id="familyProofType" class="form-select er-control">
                                         <option value="">-- Select Proof Type --</option>
-                                        <option>Driving License</option>
-                                        <option>PAN Card</option>
-                                        <option>Passport</option>
-                                        <option>Ration Card</option>
-                                        <option>Voter ID</option>
-                                        <option>BPL Certificate</option>
-                                        <option>Birth Certificate</option>
-                                        <option>Death Certificate</option>
-                                        <option>Passbook/Chequebook</option>
+                                        <option value="Driving License">Driving License</option>
+                                        <option value="PAN Card">PAN Card</option>
+                                        <option value="Passport">Passport</option>
+                                        <option value="Ration Card">Ration Card</option>
+                                        <option value="Voter ID">Voter ID</option>
+                                        <option value="BPL Certificate">BPL Certificate</option>
+                                        <option value="Birth Certificate">Birth Certificate</option>
+                                        <option value="Death Certificate">Death Certificate</option>
+                                        <option value="Passbook/Chequebook">Passbook/Chequebook</option>
                                     </select>
                                 </div>
                             </div>
@@ -732,13 +738,13 @@
                                     <tr>
                                         <th>Name</th>
                                         <th>Date of Birth</th>
-                                        <th>Relationship with the Employee</th>
+                                        <th>Relationship with <br /> the Employee</th>
                                         <th>Gender</th>
-                                        <th>Whether Residing with Him / Her?</th>
-                                        <th>If Residing is "No" then mentioned State of Residing</th>
-                                        <th>If Residing is "No" then mentioned District of Residing</th>
-                                        <th>Family Member Photo required in Soft copy</th>
-                                        <th>Type of Proof required in Soft copy</th>
+                                        <th>Whether Residing <br /> with Him / Her?</th>
+                                        <th>If Residing is "No" then <br/> mentioned State of Residing</th>
+                                        <th>If Residing is "No" then <br /> mentioned District of Residing</th>
+                                        <th>Family Member Photo <br /> required in Soft copy</th>
+                                        <th>Type of Proof <br /> required in Soft copy</th>
                                         <th>Proof</th>
                                         <th>Action</th>
                                     </tr>
@@ -823,7 +829,7 @@
 
             <!-- Footer Actions -->
 
-            <div class="row">
+            @* <div class="row">
                 <div class="er-footer-actions">
                     <button type="submit" class="er-btn-submit">
                         <i class="ri-check-double-line"></i> Submit
@@ -831,6 +837,31 @@
                     <button type="button" class="er-btn-reset" onclick="resetForm()">
                         <i class="ri-refresh-line"></i> Reset Form
                     </button>
+                    <div class="er-footer-note">
+                        <i class="ri-error-warning-line" style="color: #ff0a0a;"></i>
+                        Fields marked <strong>*</strong> are mandatory
+                    </div>
+                </div>
+            </div> *@
+            <div class="row">
+                <div class="er-footer-actions">
+
+                    <button type="button" id="btnPreview" class="er-btn-preview">
+                        <i class="ri-eye-line"></i> Preview
+                    </button>
+
+                    <button type="button" id="btnEdit" class="er-btn-edit" style="display:none;">
+                        <i class="ri-edit-line"></i> Edit
+                    </button>
+
+                    <button type="submit" id="btnFinalSubmit" class="er-btn-submit" style="display:none;">
+                        <i class="ri-check-double-line"></i> Final Submit
+                    </button>
+
+                    <button type="button" class="er-btn-reset" onclick="resetForm()">
+                        <i class="ri-refresh-line"></i> Reset Form
+                    </button>
+
                     <div class="er-footer-note">
                         <i class="ri-error-warning-line" style="color: #ff0a0a;"></i>
                         Fields marked <strong>*</strong> are mandatory

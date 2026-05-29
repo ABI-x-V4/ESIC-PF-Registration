@@ -2,11 +2,7 @@
 using Insfrastructure.DbModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
 using Repository.User;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 
 namespace Services.Users
 {
@@ -23,43 +19,26 @@ namespace Services.Users
 
         public async Task<UserDTO?> LoginAsync(string username, string password)
         {
+            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+                return null;
 
             var user = await _context.Users
-                    .FirstOrDefaultAsync(x => x.Username == username);
-
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Username == username);
             if (user == null)
                 return null;
 
-            bool isValid = BCrypt.Net.BCrypt.Verify(password, user.Password);
+            //bool isValid = BCrypt.Net.BCrypt.Verify(password, user.Password);
 
-            if (!isValid)
-                return null;
-
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.UTF8.GetBytes(_config["Jwt:Key"]);
-
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(new[]
-                {
-                    new Claim(ClaimTypes.Name, user.Username),
-                    new Claim("UserId", user.Id.ToString())
-                }),
-                Expires = DateTime.UtcNow.AddHours(2),
-                Issuer = _config["Jwt:Issuer"],
-                Audience = _config["Jwt:Audience"],
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-            };
-
-            var token = tokenHandler.CreateToken(tokenDescriptor);
+            //if (!isValid)
+            //    return null;
 
             return new UserDTO
             {
                 Id = user.Id,
                 Username = user.Username,
-                Token = tokenHandler.WriteToken(token)
+                CreatedDate = user.CreatedDate
             };
-
         }
 
         public async Task<bool> RegisterUserAsync(UserDTO model)

@@ -1,6 +1,10 @@
 ﻿using DataModels;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Repository.User;
+using System.Security.Claims;
 
 namespace ESIC_PF_Registration.Controllers
 {
@@ -14,20 +18,67 @@ namespace ESIC_PF_Registration.Controllers
         }
 
         [HttpGet]
-        public IActionResult Login()
+        [AllowAnonymous]
+        public async Task<IActionResult> Login()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return View(new UserDTO());
+        }
+
+        [HttpPost("login")]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Login(UserDTO model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            var result = await _iuser.LoginAsync(model.Username, model.Password);
+
+            if (result == null)
+            {
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                ModelState.AddModelError(string.Empty, "Invalid username or password");
+                return View(model);
+            }
+
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, result.Username ?? ""),
+                new Claim(ClaimTypes.NameIdentifier, result.Id.ToString()),
+                new Claim("UserId", result.Id.ToString())
+            };
+
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
+
+            
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                principal,
+                new AuthenticationProperties
+                {
+                    IsPersistent = false,
+                    ExpiresUtc = DateTimeOffset.UtcNow.AddHours(2)
+                });
+
+            return RedirectToAction("GetAllEmpReg", "Employee");
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return RedirectToAction("Login", "Login");
+        }
+
+        [HttpGet]
+        public IActionResult AccessDenied()
         {
             return View();
         }
 
-        [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] UserDTO model)
-        {
-            var result = await _iuser.LoginAsync(model.Username, model.Password);
-
-            if (result == null)
-                return Unauthorized("Invalid username or password");
-
-            return Ok(result);
-        }
     }
 }

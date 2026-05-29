@@ -1,0 +1,922 @@
+﻿@using ESIC_PF_Registration.Common
+@using System.IO
+@model EmployeeRegistrationDTO
+@{
+    ViewData["Title"] = "Employee Page";
+}
+<style>
+
+    .thumbb .img-thumbnail-clickable {
+        cursor: pointer;
+        transition: opacity 0.2s;
+    }
+
+        .thumbb .img-thumbnail-clickable:hover {
+            opacity: 0.8;
+        }
+
+    .thumbb img {
+        height: 100px;
+        width: 100px;
+        object-fit: cover;
+    }
+
+    .b-red {
+        background: red;
+        background-color: red;
+        border: 1px solid #fff;
+        --bs-btn-close-bg: none;
+        opacity: 1;
+        color: #fff;
+        line-height: 15px;
+    }
+
+        .b-red:hover {
+            color: #fff !important;
+            opacity: 1 !important;
+        }
+
+    .pdf-thumbb img {
+        cursor: pointer;
+        transition: opacity 0.2s;
+        height: 100px;
+        width: 100px;
+        object-fit: cover;
+        padding: .25rem;
+        background-color: #fff;
+        border: 1px solid rgb(222 226 230);
+        border-radius: 0.375rem;
+        max-width: 100%;
+    }
+
+</style>
+<div class="container mt-4">
+    <div class="form-container">
+        <div class="row">
+            <div class="er-main-heading">
+                <div class="er-mh-icon"><i class="ri-user-add-line"></i></div>
+                <div class="er-mh-text">
+                    <h1>Employee Registration For ESIC Portal</h1>
+                    <p>(NOTE :- * Required Fields (all the required fields need to be filed up))</p>
+                </div>
+                <span class="er-required-badge"><i class="ri-error-warning-line"></i> * Required Fields</span>
+            </div>
+        </div>
+
+
+
+        <div id="nomineeHiddenFields"></div>
+        <div id="familyHiddenFields"></div>
+        <input type="file" id="FamilyMemberPhotosInput" name="FamilyMemberPhotos" multiple hidden />
+        <input type="file" id="FamilyProofDocsInput" name="FamilyProofDocs" multiple hidden />
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <!-- ═══════════ SECTION 1 · Personal Information ══════════ -->
+
+        <div class="row">
+            <div class="er-section-card px-0">
+                <div class="er-section-header">
+                    <div class="er-sh-icon"><i class="ri-id-card-line"></i></div>
+                    <h2>Personal Information</h2>
+                </div>
+                <div class="er-section-body">
+                    <div class="row g-3">
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="er-form-group">
+                                <label class="er-label">Insured Person Number <span class="text-muted" style="text-transform:none;font-weight:400;font-size:0.7rem;">(if already have)</span></label>
+                                <select class="er-control" asp-for="IsEsicAvailable" id="esicDropdown" disabled>
+                                    <option value="">--Select--</option>
+                                    <option value="1">Yes</option>
+                                    <option value="0">No</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4" id="ipBlock" style="display:none;">
+                            <label class="er-label">IP Number</label>
+                            <input asp-for="IpNumber" class="er-control" disabled />
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="er-form-group">
+                                <label class="er-label">Is IP Disabled <span class="er-req">*</span></label>
+
+                                <select asp-for="IsEsicDisabled" class="er-control" disabled>
+                                    <option value="">--Select--</option>
+                                    <option value="1">Yes</option>
+                                    <option value="0">No</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="er-form-group">
+                                <label class="er-label">Type of Disability</label>
+                                <input asp-for="TypeOfDisability" class="er-control" disabled />
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="er-form-group">
+                                <label class="er-label">Name of IP <span class="er-req">*</span> <span class="text-muted" style="text-transform:none;font-weight:400;font-size:0.7rem;">(as per Aadhaar)</span></label>
+                                <input asp-for="Name" class="er-control" disabled />
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="er-form-group">
+                                <label class="er-label">Father / Husband <span class="er-req">*</span></label>
+
+                                <select asp-for="FatherOrHusband" class="er-control" disabled>
+                                    <option value="">--Select--</option>
+                                    <option value="Father">Father</option>
+                                    <option value="Husband">Husband</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="er-form-group">
+                                <label class="er-label">Name of Father / Husband <span class="er-req">*</span></label>
+
+                                <input asp-for="FatherOrHusbandName" class="er-control" disabled />
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="er-form-group">
+                                <label class="er-label">Date of Birth <span class="er-req">*</span> <span class="text-muted" style="text-transform:none;font-weight:400;font-size:0.7rem;">(as per Aadhaar)</span></label>
+                                @{
+                                    var dobText = Model.Dob?.ToString("dd/MM/yyyy") ?? "";
+                                    dobText = dobText.Replace("-", "/");
+                                }
+                                <input type="text" class="er-control" value="@dobText" disabled />
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="er-form-group">
+                                <label class="er-label">Marital Status <span class="er-req">*</span></label>
+                                <select asp-for="MaritalStatus" class="er-control" disabled>
+                                    <option value="">--Select--</option>
+                                    <option value="Married">Married</option>
+                                    <option value="Unmarried">Unmarried</option>
+                                    <option value="Widowed">Widowe/Widowerd</option>
+                                    <option value="Divorced">Divorcee</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="er-form-group">
+                                <label class="er-label">Gender <span class="er-req">*</span></label>
+
+                                <select asp-for="Gender" class="er-control" disabled>
+                                    <option value="">--Select--</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Transgender">Transgender</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="er-divider"></div>
+                    <div class="er-sub-label"><i class="ri-shield-check-line"></i> Identity Documents</div>
+
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <div class="er-form-group">
+                                <label class="er-label">Aadhaar no. with copy of E Aadhaar</label>
+
+                                <input asp-for="AadhaarNo" class="er-control" disabled />
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="er-form-group">
+                                <label class="er-label">PAN no. with copy of PAN card</label>
+                                <input asp-for="PanNo" class="er-control" disabled />
+                            </div>
+                            
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="er-form-group">
+                                <label class="er-label">Uploaded E Aadhaar</label>
+                                @{
+                                    var aadhaarUrl = string.IsNullOrWhiteSpace(Model.AadhaarPath)
+                                    ? ""
+                                    : Url.Content("~/" + Model.AadhaarPath.TrimStart('/'));
+
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(Model.AadhaarPath))
+                                {
+                                    <a href="aadhaarUrl" data-bs-toggle="modal" data-bs-target="#aadhaarModal"
+                                       class="el-act act-view w-50 mt-2" title="View"><i class="ri-eye-line me-1"></i> View</a>
+
+                                    <div class="modal fade" id="aadhaarModal" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered modal-lg">
+                                            <div class="modal-content border-0">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">PDF Viewer</h5>
+                                                    <button type="button" class="btn-close b-red position-absolute top-0 end-0 m-3" data-bs-dismiss="modal"
+                                                            aria-label="Close">
+                                                        <i class="ri-close-line"></i>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body p-0">
+                                                    <iframe src="@aadhaarUrl" width="100%" height="600px" style="border:none;"></iframe>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="er-form-group">
+                                <label class="er-label">Uploaded PAN</label>
+                                @{
+                                    var panUrl = string.IsNullOrWhiteSpace(Model.PanPath)
+                                    ? ""
+                                    : Url.Content("~/" + Model.PanPath.TrimStart('/'));
+
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(Model.PanPath))
+                                {
+                                    <a href="@panUrl" data-bs-toggle="modal" data-bs-target="#panModal"
+                                       class="el-act act-view w-50 mt-2" title="View"><i class="ri-eye-line me-1"></i> View</a>
+
+                                    
+                                    <div class="modal fade" id="panModal" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered modal-lg">
+                                            <div class="modal-content border-0">
+                                                <div class="modal-body p-0 position-relative text-center">
+                                                    <button type="button" class="btn-close b-red position-absolute top-0 end-0 m-3" data-bs-dismiss="modal"
+                                                            aria-label="Close">
+                                                        <i class="ri-close-line"></i>
+                                                    </button>
+                                                    <img src="@panUrl" alt="Full Size" class="img-fluid rounded">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+
+
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="er-form-group">
+                                <label class="er-label">Self Photo <span class="text-muted" style="text-transform:none;font-weight:400;font-size:0.7rem;">(Soft copy)</span></label>
+                                @{
+                                    var photoUrl = string.IsNullOrWhiteSpace(Model.PhotoPath)
+                                    ? ""
+                                    : Url.Content("~/" + Model.PhotoPath.TrimStart('/'));
+
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(Model.PhotoPath))
+                                {
+                                    <a href="@photoUrl" data-bs-toggle="modal" data-bs-target="#photoModal"
+                                       class="el-act act-view w-50 mt-2" title="View"><i class="ri-eye-line me-1"></i> View</a>
+
+                                    <div class="modal fade" id="photoModal" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered modal-lg">
+                                            <div class="modal-content border-0">
+                                                <div class="modal-body p-0 position-relative text-center">
+                                                    <button type="button" class="btn-close b-red position-absolute top-0 end-0 m-3" data-bs-dismiss="modal"
+                                                            aria-label="Close">
+                                                        <i class="ri-close-line"></i>
+                                                    </button>
+                                                    <img src="@photoUrl" alt="Full Size" class="img-fluid rounded">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════ SECTION 2 · Address Details ════════════ -->
+
+        <div class="row">
+            <div class="er-section-card px-0">
+                <div class="er-section-header">
+                    <div class="er-sh-icon"><i class="ri-map-pin-2-line"></i></div>
+                    <h2>Address Details</h2>
+                </div>
+                <div class="er-section-body">
+
+                    <div class="er-sub-label"><i class="ri-home-pin-line"></i> Present Address</div>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <div class="er-form-group">
+                                <label class="er-label">Address <span class="er-req">*</span></label>
+
+                                <input asp-for="EmpAddresses.PstAddress" class="er-control" id="presentAddress" disabled />
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="er-form-group">
+                                <label class="er-label">State <span class="er-req">*</span></label>
+                                <input asp-for="EmpAddresses.PstStateName" class="er-control" id="presentState" disabled />
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="er-form-group">
+                                <label class="er-label">District <span class="er-req">*</span></label>
+                                <input asp-for="EmpAddresses.PstDistrictName" class="er-control" id="presentAddress" disabled />
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="er-form-group">
+                                <label class="er-label">Pin Code</label>
+                                <input asp-for="EmpAddresses.PstPinCode" class="er-control" id="presentPinCode" disabled />
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-6">
+                            <div class="er-form-group">
+                                <label class="er-label">Personal Mobile No. <span class="er-req">*</span></label>
+                                <input asp-for="EmpAddresses.PstMobile" type="number" class="er-control" id="presentMobile" disabled />
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-6">
+                            <div class="er-form-group">
+                                <label class="er-label">Personal Email </label>
+                                <input asp-for="EmpAddresses.PstEmail" type="email" class="er-control" id="presentEmail" disabled />
+                            </div>
+                        </div>
+                    </div>
+
+                    <label class="er-check-row mt-1">
+
+                        <input type="checkbox" class="form-check-input" id="sameAddressCheck" asp-for="EmpAddresses.IsSameAddressBool" disabled>
+                        <label for="sameAddress"><i class="ri-file-copy-line" style="color:#ff8302"></i> Same as Present Address</label>
+
+                    </label>
+
+                    <div class="er-sub-label"><i class="ri-building-4-line"></i> Permanent Address</div>
+                    <div class="row g-3" id="permanentAddr">
+                        <div class="col-12">
+                            <div class="er-form-group">
+                                <label class="er-label">Address <span class="er-req">*</span></label>
+                                <input asp-for="EmpAddresses.PmtAddress" class="er-control" id="permanentAddress" disabled />
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="er-form-group">
+                                <label class="er-label">State <span class="er-req">*</span></label>
+                                <input asp-for="EmpAddresses.PmtStateName" class="er-control" id="permanentState" disabled />
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="er-form-group">
+                                <label class="er-label">District <span class="er-req">*</span></label>
+                                <input asp-for="EmpAddresses.PmtDistrictName" class="er-control" id="permanentDistrict" disabled />
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="er-form-group">
+                                <label class="er-label">Pin Code</label>
+                                <input asp-for="EmpAddresses.PmtPinCode" class="er-control" id="permanentPinCode" disabled />
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-6">
+                            <div class="er-form-group">
+                                <label class="er-label">Residence Mobile No. <span class="er-req">*</span></label>
+                                <input asp-for="EmpAddresses.PmtMobile" type="number" class="er-control" id="permanentMobile" disabled />
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-6">
+                            <div class="er-form-group">
+                                <label class="er-label">Email </label>
+                                <input asp-for="EmpAddresses.PmtEmail" type="email" class="er-control" id="permanentEmail" disabled />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="er-divider"></div>
+                    <div class="er-sub-label"><i class="ri-hospital-line"></i> ESIC Dispensary / IMP / mEUD Details</div>
+                    <div class="row g-3">
+                        <div class="col-12 col-md-4">
+                            <div class="er-form-group">
+                                <label class="er-label">Dispensary or IMP or mEUD for IP</label>
+                                <input asp-for="DispenseryDetails.DispensaryOrImpormEudforIp" class="er-control" disabled />
+
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="er-form-group">
+                                <label class="er-label">State</label>
+                                <input asp-for="DispenseryDetails.StateNameForIp" class="er-control" id="presentState" disabled />
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="er-form-group">
+                                <label class="er-label">District</label>
+                                <input asp-for="DispenseryDetails.DistrictNameForIp" class="er-control" id="presentDistrict" disabled />
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="er-form-group">
+                                <label class="er-label">Name of ESIC Dispensary / IMP / mEUD for IP</label>
+
+                                <input asp-for="DispenseryDetails.DispensaryNameForIp" class="er-control" disabled />
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div class="er-form-group">
+                                <label class="er-label">Dispensary / IMP / mEUD for Family Members</label>
+                                <input asp-for="DispenseryDetails.DispensaryOrImpormEudforFamily" class="er-control" disabled />
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="er-form-group">
+                                <label class="er-label">State</label>
+                                <input asp-for="DispenseryDetails.StateNameForFamily" class="er-control" id="presentStateForFamily" disabled />
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="er-form-group">
+                                <label class="er-label">District</label>
+                                <input asp-for="DispenseryDetails.DistrictNameForFamily" class="er-control" id="presentDistrictForFamily" disabled />
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="er-form-group">
+                                <label class="er-label">Name of ESIC Dispensary/ IMP/ mEUD For Family Members</label>
+                                <input asp-for="DispenseryDetails.DispensaryNameForFamily" class="er-control" disabled />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═════════ SECTION 3 · Current Employer ═══════════════ -->
+        <div class="row">
+            <div class="er-section-card px-0">
+                <div class="er-section-header">
+                    <div class="er-sh-icon"><i class="ri-building-line"></i></div>
+                    <h2>Current Employer's Particulars</h2>
+                </div>
+                <div class="er-section-body">
+                    <div class="row g-3">
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="er-form-group">
+                                <label class="er-label">Date of Appointment (DOJ) <span class="er-req">*</span></label>
+                                @{
+                                    var doiText = Model.EmploymentDetails?.DojofCurrentEmployer?.ToString("dd/MM/yyyy") ?? "";
+                                    doiText = doiText.Replace("-", "/"); 
+                                }
+                                <input type="text" class="er-control" value="@doiText" disabled />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═════════════ SECTION 4 · Previous Employer ════════════ -->
+
+        <div class="row">
+            <div class="er-section-card px-0">
+                <div class="er-section-header">
+                    <div class="er-sh-icon"><i class="ri-history-line"></i></div>
+                    <h2>Have Previous Employer</h2>
+                </div>
+                <div class="er-section-body">
+                    <div class="er-tip"><i class="ri-information-line"></i> In case of any Previous employment please fill up the details below:</div>
+                    <div class="row g-3">
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="er-form-group">
+                                <label class="er-label">Employer's Code No.</label>
+                                <input asp-for="EmploymentDetails.EmployerCode" class="er-control" disabled />
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="er-form-group">
+                                <label class="er-label">Previous Insurance No.</label>
+                                <input asp-for="EmploymentDetails.PreviousInsuarenceNo" class="er-control" disabled />
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="er-form-group">
+                                <label class="er-label">Name of the Employer</label>
+                                <input asp-for="EmploymentDetails.EmployerName" class="er-control" disabled />
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="er-form-group">
+                                <label class="er-label">Address of Employer</label>
+                                <input asp-for="EmploymentDetails.EmployerAddress" class="er-control" disabled />
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="er-form-group">
+                                <label class="er-label">State</label>
+                                <input asp-for="EmploymentDetails.StateName" class="er-control" id="stateDropdown" disabled />
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="er-form-group">
+                                <label class="er-label">District</label>
+                                <input asp-for="EmploymentDetails.DistrictName" class="er-control" id="employmentDistrictDropdown" disabled />
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="er-form-group">
+                                <label class="er-label">Pin Code</label>
+                                <input asp-for="EmploymentDetails.Pincode" class="er-control" disabled />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ════════  SECTION 5 · Nominee Details ═════════ -->
+
+        <div class="row">
+            <div class="er-section-card px-0">
+                <div class="er-section-header">
+                    <div class="er-sh-icon"><i class="ri-user-heart-line"></i></div>
+                    <h2>Details of Nominee <span style="color: #ff2a2a;margin-left:4px;font-size:0.8rem;">*</span></h2>
+                </div>
+                <div class="er-section-body">
+                    <div class="er-table-wrap">
+                        <table class="er-table nomineeTable">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>DOB</th>
+                                    <th>Relationship</th>
+                                    <th>Address</th>
+                                    <th>State Name</th>
+                                    <th>District Name</th>
+                                    <th>Pincode</th>
+                                    <th>Is Nominee a Family Member</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                                @foreach (var i in Model.NomineeDetails)
+                                {
+                                    var nomineedob = i.Dob.ToString("dd/MM/yyyy") ?? "";
+                                    nomineedob = nomineedob.Replace("-", "/");
+
+                                    <tr>
+                                        <td>@i.Name</td>
+                                        <td>@nomineedob</td>
+                                        <td>@i.Relationship</td>
+                                        <td>@i.Address</td>
+                                        <td>@i.StateName</td>
+                                        <td>@i.DistrictName</td>
+                                        <td>@i.Pincode</td>
+                                        <td>@i.IsFamilyMember</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════ SECTION 6 · Family Particulars ═══════ -->
+
+        <div class="row">
+            <div class="er-section-card px-0">
+                <div class="er-section-header">
+                    <div class="er-sh-icon"><i class="ri-group-line"></i></div>
+                    <h2>Family Particulars of Insured Person</h2>
+                </div>
+                <div class="er-section-body">
+                    <div class="er-table-wrap">
+                        <table id="familyTable" class="er-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Date of Birth</th>
+                                    <th>Relationship with <br /> the Employee</th>
+                                    <th>Gender</th>
+                                    <th>Whether Residing <br /> with Him / Her?</th>
+                                    <th>If Residing is "No" then <br/> mentioned State of Residing</th>
+                                    <th>If Residing is "No" then <br/> mentioned District of Residing</th>
+                                    <th>Family Member <br /> Photo</th>
+                                    <th>Type of <br /> Proof</th>
+                                    <th style="width:150px;">Proof</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (int i = 0; i < Model.FamilyParticulars.Count; i++)
+                                {
+                                    var item = Model.FamilyParticulars[i];
+                                    var memphotoUrl = ToUrl(item.MemberPhotoPath);
+                                    var proofUrl = ToUrl(item.ProofDocPath);
+
+                                    var photoModalId = $"fp_photo_{i}";
+                                    var proofModalId = $"fp_proof_{i}";
+
+                                    var familydob = item.Dob.ToString("dd/MM/yyyy") ?? "";
+                                    familydob = familydob.Replace("-", "/");
+                                    <tr>
+                                        <td>@item.Name</td>
+                                        <td>@familydob</td>
+                                        <td>@item.Relationship</td>
+                                        <td>@item.Gender</td>
+                                        <td>@item.ResidingWith</td>
+                                        <td>@(item.ResidingWith == "No" ? item.StateName : "-")</td>
+                                        <td>@(item.ResidingWith == "No" ? item.DistrictName : "-")</td>
+
+                                        <td>
+                                            @if (!string.IsNullOrWhiteSpace(item.MemberPhotoPath))
+                                            {
+                                                if (IsImage(item.MemberPhotoPath))
+                                                {
+                                                    <a href="@memphotoUrl" data-bs-toggle="modal" data-bs-target="#@photoModalId"
+                                                       class="el-act act-view w-50 mt-2" title="View" 
+                                                       style="width: 60px !important;"><i class="ri-eye-line me-1"></i> View</a>
+
+                                                    <!-- Modal for image -->
+                                                    <div class="modal fade" id="@photoModalId" tabindex="-1" aria-hidden="true">
+                                                        <div class="modal-dialog modal-dialog-centered modal-lg">
+                                                            <div class="modal-content border-0">
+                                                                <div class="modal-body p-0">
+                                                                    <button type="button"
+                                                                            class="btn-close b-red position-absolute top-0 end-0 m-3"
+                                                                            data-bs-dismiss="modal"
+                                                                            aria-label="Close">
+                                                                        <i class="ri-close-line"></i>
+                                                                    </button>
+                                                                    <img src="@memphotoUrl" class="img-fluid rounded" alt="Full Photo" />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                }
+                                                else if (IsPdf(item.MemberPhotoPath))
+                                                {
+                                                    <a href="@memphotoUrl" data-bs-toggle="modal" data-bs-target="#@photoModalId"
+                                                       class="el-act act-view w-100" title="View" style="width: 60px !important;">
+                                                       <i class="ri-eye-line me-1"></i>
+                                                       View
+                                                   </a>
+
+                                                    <!-- Modal for PDF -->
+                                                    <div class="modal fade" id="@photoModalId" tabindex="-1" aria-hidden="true">
+                                                        <div class="modal-dialog modal-dialog-centered modal-xl">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h6 class="modal-title">Member Document</h6>
+                                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                </div>
+                                                                <div class="modal-body p-0">
+                                                                    <iframe src="@memphotoUrl" style="width:100%;height:80vh;border:0;"></iframe>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <a href="@memphotoUrl" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                                        <i class="ri-download-2-line"></i> Open
+                                                    </a>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+
+                                        <td>@item.TypeOfProof</td>
+
+                                        <td style="width:150px;">
+                                            @if (!string.IsNullOrWhiteSpace(item.ProofDocPath))
+                                            {
+                                                if (IsImage(item.ProofDocPath))
+                                                {
+                                                    <a href="@proofUrl" data-bs-toggle="modal" data-bs-target="#@proofModalId" style="width: 60px !important;"
+                                                       class="el-act act-view w-50 mt-2" title="View"><i class="ri-eye-line me-1"></i> View</a>
+
+                                                    <!-- Modal for image proof -->
+                                                    <div class="modal fade" id="@proofModalId" tabindex="-1" aria-hidden="true">
+                                                        <div class="modal-dialog modal-dialog-centered modal-lg">
+                                                            <div class="modal-content border-0">
+                                                                <div class="modal-body p-0">
+                                                                    <button type="button"
+                                                                            class="btn-close b-red position-absolute top-0 end-0 m-3"
+                                                                            data-bs-dismiss="modal"
+                                                                            aria-label="Close">
+                                                                        <i class="ri-close-line"></i>
+                                                                    </button>
+                                                                    <img src="@proofUrl" class="img-fluid rounded" alt="Full Proof" />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                }
+                                                else if (IsPdf(item.ProofDocPath))
+                                                {
+                                                    <a href="@proofUrl" data-bs-toggle="modal" data-bs-target="#@proofModalId" style="width: 60px !important;"
+                                                       class="el-act act-view w-100" title="View"><i class="ri-eye-line me-1"></i> View</a>
+
+                                                    <!-- Modal for PDF proof -->
+                                                    <div class="modal fade" id="@proofModalId" tabindex="-1" aria-hidden="true">
+                                                        <div class="modal-dialog modal-dialog-centered modal-xl">
+                                                            <div class="modal-content">
+                                                                <div class="modal-header">
+                                                                    <h6 class="modal-title">Proof Document</h6>
+                                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                                </div>
+                                                                <div class="modal-body p-0">
+                                                                    <iframe src="@proofUrl" style="width:100%;height:80vh;border:0;"></iframe>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <a href="@proofUrl" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                                        <i class="ri-download-2-line"></i> Open
+                                                    </a>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">-</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═════════ SECTION 7 · Bank Account ══════════ -->
+
+        <div class="row">
+            <div class="er-section-card px-0">
+                <div class="er-section-header">
+                    <div class="er-sh-icon"><i class="ri-bank-card-line"></i></div>
+                    <h2>Details of Bank Account of Employee</h2>
+                </div>
+                <div class="er-section-body">
+                    <div class="row g-3">
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="er-form-group">
+                                <label class="er-label">Account Number <span class="er-req">*</span></label>
+                                <input asp-for="EmpBankDetails.AccountNumber" class="er-control" disabled />
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="er-form-group">
+                                <label class="er-label">Type of Account <span class="er-req">*</span></label>
+                                <select asp-for="EmpBankDetails.TypeofAccount" class="er-control" disabled>
+                                    <option value="">--Select--</option>
+                                    <option value="Savings">Savings</option>
+                                    <option value="Current">Current</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="er-form-group">
+                                <label class="er-label">Uploaded Bank Document <span class="er-req">*</span></label>
+                                @{
+                                    var bankDocPath = Model?.EmpBankDetails?.BankDoc;
+                                    var bankdocUrl = string.IsNullOrWhiteSpace(bankDocPath)  ? "" : Url.Content("~/" + bankDocPath.TrimStart('/'));
+                                    var ext = string.IsNullOrWhiteSpace(bankDocPath) ? "" : System.IO.Path.GetExtension(bankDocPath).ToLowerInvariant();
+
+                                    var isPdf = ext == ".pdf";
+                                    var isImage = ext == ".jpg" || ext == ".jpeg";
+                                    var modalId = "bankDocModal";
+                                }
+
+                                @if (!string.IsNullOrWhiteSpace(bankdocUrl))
+                                {
+                                    <div class="thumbb">
+
+                                        @if (isImage)
+                                        {
+                                            <a href="@bankdocUrl" data-bs-toggle="modal" data-bs-target="#@modalId"
+                                            class="el-act act-view w-50" title="View"><i class="ri-eye-line me-1"></i> View</a>
+
+                                        }
+                                        else if (isPdf)
+                                        {
+                                            <a href="@bankdocUrl" data-bs-toggle="modal" data-bs-target="#@modalId" 
+                                            class="el-act act-view w-50" title="View"><i class="ri-eye-line me-1"></i> View</a>
+                                        }
+                                        else
+                                        {
+                                            <div class="border rounded-3 p-4 shadow-sm d-inline-block">
+                                                <i class="ri-file-2-line" style="font-size:44px;"></i>
+                                                <div class="mt-2 fw-semibold">Bank Document</div>
+                                                <div class="text-muted small">Preview not supported</div>
+                                            </div>
+                                        }
+                                    </div>
+
+                                    @* ---------- MODAL ---------- *@
+                                    <div class="modal fade" id="@modalId" tabindex="-1" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered @(isPdf ? "modal-xl" : "modal-lg")">
+                                            <div class="modal-content border-0">
+                                                <div class="modal-body p-0 position-relative text-center">
+
+                                                    <button type="button"
+                                                            class="btn-close b-red position-absolute top-0 end-0 m-3"
+                                                            data-bs-dismiss="modal"
+                                                            aria-label="Close">
+                                                        <i class="ri-close-line"></i>
+                                                    </button>
+
+                                                    @if (isImage)
+                                                    {
+                                                        <img src="@bankdocUrl"
+                                                             alt="Bank Document"
+                                                             class="img-fluid rounded" />
+                                                    }
+                                                    else if (isPdf)
+                                                    {
+                                                        <iframe src="@bankdocUrl"
+                                                                style="width:100%; height:80vh; border:0;"
+                                                                title="Bank Document PDF"></iframe>
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="p-4">
+                                                            <p class="mb-2">Preview not available for this file type.</p>
+                                                            <a class="btn btn-outline-primary"
+                                                               href="@bankdocUrl"
+                                                               target="_blank" rel="noopener">
+                                                                <i class="ri-download-2-line"></i> Download
+                                                            </a>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="er-form-group">
+                                <label class="er-label">Name of Bank <span class="er-req">*</span></label>
+                                <input asp-for="EmpBankDetails.BankName" class="er-control" disabled />
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="er-form-group">
+                                <label class="er-label">Name of Branch <span class="er-req">*</span></label>
+                                <input asp-for="EmpBankDetails.BranchName" class="er-control" disabled />
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="er-form-group">
+                                <label class="er-label">MICR Code of the Bank/Branch</label>
+                                <input asp-for="EmpBankDetails.Micr" class="er-control" disabled />
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-md-4">
+                            <div class="er-form-group">
+                                <label class="er-label">IFSC Code of the Bank/Branch <span class="er-req">*</span></label>
+                                <input asp-for="EmpBankDetails.Ifsc" class="er-control" disabled />
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="pf-save-wrap">
+            <a href="@Url.Content("~/GetAllEmpReg")" class="er-btn-preview">
+                <i class="ri-arrow-left-line"></i> Back
+            </a>
+
+        </div>
+    </div>
+</div>
+
+
+@functions {
+    string ToUrl(string? relPath)
+        => string.IsNullOrWhiteSpace(relPath) ? "" : Url.Content("~/" + relPath.TrimStart('/'));
+
+    bool IsPdf(string? path)
+        => !string.IsNullOrWhiteSpace(path) && System.IO.Path.GetExtension(path).Equals(".pdf", StringComparison.OrdinalIgnoreCase);
+
+    bool IsImage(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path)) return false;
+        var ext =System.IO.Path.GetExtension(path).ToLowerInvariant();
+        return ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".gif" || ext == ".webp";
+    }
+}

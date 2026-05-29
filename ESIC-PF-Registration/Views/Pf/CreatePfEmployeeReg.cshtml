@@ -5,19 +5,24 @@
 }
 
 <div class="container pf-page">
-
-
     <div class="row">
         <div class="er-main-heading">
             <div class="er-mh-icon"><i class="ri-user-add-line"></i></div>
             <div class="er-mh-text">
-                <h1>PF REGISTRATION</h1>
+                <h1>Employee Registration For PF Portal</h1>
 
             </div>
             <span class="er-required-badge"><i class="ri-error-warning-line"></i> * Required Fields</span>
         </div>
     </div>
+    <div id="previewBanner" class="pf-preview-banner" style="display:none;">
+        <i class="ri-information-line"></i>
+        Preview Mode: All fields are disabled. Click <strong>Edit</strong> to make changes or <strong>Final Submit</strong> to submit.
+    </div>
     <form asp-action="CreatePfEmployeeReg" method="post" enctype="multipart/form-data" id="employeePFForm">
+        @Html.AntiForgeryToken()
+        <input asp-for="EmployeeId" type="hidden" />
+
         <div class="row">
         <div class="pf-card px-0">
             <div class="pf-card-header">
@@ -40,7 +45,7 @@
                     <div class="col-md-6">
                         <div class="pf-form-group">
                             <label class="pf-label">Full Name <span class="er-req">*</span></label>
-                            <input asp-for="AadhaarFullName" class="pf-control" placeholder="As per Aadhaar" />
+                            <input asp-for="AadhaarFullName" class="pf-control" placeholder="As per Aadhaar"  />
                             <span asp-validation-for="AadhaarFullName" class="text-danger"></span>
                         </div>
                     </div>
@@ -69,7 +74,7 @@
                     <div class="col-md-4">
                         <div class="pf-form-group">
                             <label class="pf-label">Aadhaar Number <span class="er-req">*</span></label>
-                            <input asp-for="AadhaarNo" class="pf-control" placeholder="12-digit Aadhaar" />
+                                <input asp-for="AadhaarNo" class="pf-control" placeholder="12-digit Aadhaar" oninput="this.value = this.value.replace(/[^0-9]/g, '')" />
                             <span asp-validation-for="AadhaarNo" class="text-danger"></span>
                         </div>
                     </div>
@@ -85,6 +90,7 @@
                                     <span id="aadhaarText">No file selected</span>
                                 </div>
                             </div>
+                            <span asp-validation-for="AadhaarFile" class="text-danger"></span>
                             <div class="er-note">
                                 <i class="ri-information-line"></i>
                                 Note : Please upload the latest e-Aadhaar in PDF format
@@ -137,7 +143,12 @@
                     <div class="col-md-6">
                         <div class="pf-form-group">
                             <label class="pf-label">PAN Number <span class="er-req">*</span></label>
-                            <input asp-for="PanNo" class="pf-control" placeholder="ABCDE1234F" />
+                                <input asp-for="PanNo" class="pf-control" placeholder="ABCDE1234F"
+                                       style="text-transform: uppercase;"
+                                       oninput="this.value = this.value
+                                       .toUpperCase()
+                                       .replace(/[^A-Z0-9]/g, '')
+                                       .slice(0, 10);" />
                             <span asp-validation-for="PanNo" class="text-danger"></span>
                         </div>
                     </div>
@@ -263,12 +274,28 @@
             </div>
         </div>
 
-        <div class="pf-save-wrap">
+        @* <div class="pf-save-wrap">
             <button type="submit" class="pf-btn-save">
                 <i class="ri-save-line"></i>
                 Save Registration
             </button>
-        </div>
+        </div> *@
+            <div class="pf-save-wrap">
+                <button type="button" id="btnPreview" class="pf-btn-preview">
+                    <i class="ri-eye-line"></i>
+                    Preview
+                </button>
+
+                <button type="button" id="btnEdit" class="pf-btn-edit" style="display:none;">
+                    <i class="ri-edit-line"></i>
+                    Edit
+                </button>
+
+                <button type="submit" id="btnFinalSubmit" class="pf-btn-save" style="display:none;">
+                    <i class="ri-check-line"></i>
+                    Final Submit
+                </button>
+            </div>
     </div>
     </form>
 </div>
@@ -280,4 +307,7 @@
         </script>
     }
     <script src="~/js/pf.js"></script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

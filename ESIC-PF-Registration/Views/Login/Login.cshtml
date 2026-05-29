@@ -1,6 +1,231 @@
-﻿@{
+﻿@model UserDTO
+@{
     ViewData["Title"] = "Login";
     Layout = null; 
 }
 
-<h1>LOG IN PAGE</h1>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet" />
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+<style>
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: #f4f6f9;
+        /* Premium light ambient gradient mesh */
+        background-image: radial-gradient(at 0% 0%, rgba(255, 131, 2, 0.08) 0px, transparent 40%), radial-gradient(at 100% 100%, rgba(74, 74, 74, 0.05) 0px, transparent 50%), radial-gradient(at 80% 20%, rgba(255, 131, 2, 0.04) 0px, transparent 30%);
+        background-attachment: fixed;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+        padding: 20px;
+    }
+
+    /* High-End Crisp Container Layout */
+    .sc-login-wrapper {
+        width: 100%;
+        max-width: 460px;
+        background: #ffffff;
+        border-radius: 24px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.02);
+        overflow: hidden;
+    }
+
+    /* Brand Identity Space */
+    .sc-login-branding {
+        text-align: center;
+        padding: 45px 40px 25px 40px;
+    }
+
+    .sc-brand-logo {
+        height: 46px;
+        object-fit: contain;
+    }
+
+    /* Blueprint Layout Title Header Bar */
+    .sc-login-title-stripe {
+        background-color: #4a4a4a;
+        color: #ffffff;
+        text-align: center;
+        padding: 14px 20px;
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+    }
+
+    /* Interactive Form Body Panel Wrapper */
+    .sc-login-content {
+        padding: 40px 45px 45px 45px;
+    }
+
+    /* Modern Input Layout Components */
+    .sc-field-group {
+        position: relative;
+        margin-bottom: 24px;
+    }
+
+    .sc-custom-label {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #4a4a4a;
+        margin-bottom: 8px;
+        letter-spacing: 0.8px;
+        display: block;
+    }
+
+    .sc-input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .sc-input-field {
+        width: 100%;
+        border: 1.5px solid #e2e8f0;
+        padding: 14px 16px 14px 48px;
+        font-size: 14px;
+        font-weight: 500;
+        border-radius: 12px;
+        background-color: #f8fafc;
+        color: #4a4a4a;
+        transition: all 0.2s ease-in-out;
+    }
+
+        .sc-input-field::placeholder {
+            color: #8a94a6;
+            font-weight: 400;
+        }
+
+        /* Interactive Focus Styling Rules */
+        .sc-input-field:focus {
+            background-color: #ffffff;
+            border-color: #ff8302;
+            box-shadow: 0 0 0 4px rgba(255, 131, 2, 0.12);
+            outline: none;
+        }
+
+    .sc-input-icon {
+        position: absolute;
+        left: 18px;
+        color: #8a94a6;
+        font-size: 19px;
+        transition: color 0.2s ease-in-out;
+        pointer-events: none;
+    }
+
+    .sc-input-field:focus + .sc-input-icon {
+        color: #ff8302;
+    }
+
+    /* Help Layout Context Box Utilities */
+    .sc-utilities {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        font-size: 13px;
+    }
+
+    .sc-checkbox-label {
+        color: #4a4a4a;
+        font-weight: 500;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .sc-checkbox {
+        cursor: pointer;
+        border: 1.5px solid #cbd5e1;
+        border-radius: 4px;
+    }
+
+        .sc-checkbox:checked {
+            background-color: #ff8302;
+            border-color: #ff8302;
+        }
+
+    .sc-forgot-link {
+        color: #8a94a6;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.2s ease;
+    }
+
+        .sc-forgot-link:hover {
+            color: #ff8302;
+        }
+
+    /* Core Brand Submit Button Accent Layout */
+    .sc-submit-btn {
+        background: linear-gradient(135deg, #ff8302 0%, #e07200 100%);
+        color: #ffffff;
+        border: none;
+        width: 100%;
+        padding: 14px;
+        font-size: 15px;
+        font-weight: 600;
+        border-radius: 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        box-shadow: 0 8px 16px rgba(255, 131, 2, 0.2);
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+
+        .sc-submit-btn:hover {
+            box-shadow: 0 12px 20px rgba(255, 131, 2, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .sc-submit-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 8px rgba(255, 131, 2, 0.15);
+        }
+</style>
+
+<div class="sc-login-wrapper">
+
+    <div class="sc-login-branding">
+        <img src="~/images/logo-new3.png" alt="Salescom Logo" class="sc-brand-logo" />
+    </div>
+
+    <div class="sc-login-title-stripe">
+        Login Page
+    </div>
+
+    <div class="sc-login-content">
+        <form autocomplete="off" asp-controller="Login" asp-action="login" method="post">
+            @Html.AntiForgeryToken()
+
+            <div class="sc-field-group">
+                <label class="sc-custom-label">User Name</label>
+                <div class="sc-input-wrapper">
+                    <input asp-for="Username" class="sc-input-field" placeholder="Enter your username" required />
+                    <i class="ri-user-3-line sc-input-icon"></i>
+                </div>
+            </div>
+
+            <div class="sc-field-group">
+                <label class="sc-custom-label">Password</label>
+                <div class="sc-input-wrapper">
+                    <input asp-for="Password" type="password" class="sc-input-field" placeholder="Enter your password" required />
+                    <i class="ri-lock-2-line sc-input-icon"></i>
+                </div>
+            </div>
+
+            <button type="submit" class="sc-submit-btn">
+                <span>Sign In</span> <i class="ri-arrow-right-line"></i>
+            </button>
+            <div asp-validation-summary="All" style="text-align: center; color: red;"></div>
+        </form>
+    </div>
+</div>

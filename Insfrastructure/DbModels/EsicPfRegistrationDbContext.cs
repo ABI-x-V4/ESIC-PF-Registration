@@ -182,9 +182,6 @@ public partial class EsicPfRegistrationDbContext : DbContext
             entity.Property(e => e.EmployerAddress).HasMaxLength(200);
             entity.Property(e => e.EmployerCode).HasMaxLength(100);
             entity.Property(e => e.EmployerName).HasMaxLength(100);
-            entity.Property(e => e.HasPreviousEmployer)
-                .HasMaxLength(5)
-                .IsUnicode(false);
             entity.Property(e => e.PreviousInsuarenceNo).HasMaxLength(100);
 
             entity.HasOne(d => d.Employee).WithMany(p => p.EmploymentDetails)
@@ -204,6 +201,7 @@ public partial class EsicPfRegistrationDbContext : DbContext
             entity.Property(e => e.Name).HasMaxLength(200);
             entity.Property(e => e.Relationship).HasMaxLength(50);
             entity.Property(e => e.ResidingWith).HasMaxLength(5);
+            entity.Property(e => e.TypeOfProof).HasMaxLength(50);
 
             entity.HasOne(d => d.Employee).WithMany(p => p.FamilyParticulars)
                 .HasForeignKey(d => d.EmployeeId)
@@ -257,6 +255,7 @@ public partial class EsicPfRegistrationDbContext : DbContext
                 .HasMaxLength(20)
                 .HasColumnName("Aadhaar_Gender");
             entity.Property(e => e.AadhaarNo).HasMaxLength(20);
+            entity.Property(e => e.CreatedDate).HasColumnType("datetime");
             entity.Property(e => e.Doj)
                 .HasColumnType("datetime")
                 .HasColumnName("DOJ");
@@ -282,6 +281,10 @@ public partial class EsicPfRegistrationDbContext : DbContext
             entity.Property(e => e.Uan)
                 .HasMaxLength(12)
                 .HasColumnName("UAN");
+
+            entity.HasOne(d => d.Employee).WithMany(p => p.PfRegistrations)
+                .HasForeignKey(d => d.EmployeeId)
+                .HasConstraintName("FK_PF_Registration_Employee");
         });
 
         modelBuilder.Entity<State>(entity =>

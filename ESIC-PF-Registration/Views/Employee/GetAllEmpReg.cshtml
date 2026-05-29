@@ -1,0 +1,161 @@
+﻿@model PaginatedResult<EmployeeListRowDto>
+
+@{
+    ViewData["Title"] = "Employee List";
+
+    var qSearch = Context.Request.Query["search"].ToString();
+    var qGender = Context.Request.Query["gender"].ToString();
+    var qStatus = Context.Request.Query["status"].ToString();
+    var qSortBy = Context.Request.Query["sortBy"].ToString();
+    var qSortDir = Context.Request.Query["sortDir"].ToString();
+    var qPageSize = Context.Request.Query["pageSize"].ToString();
+
+    if (string.IsNullOrWhiteSpace(qSortBy)) qSortBy = "Name";
+    if (string.IsNullOrWhiteSpace(qSortDir)) qSortDir = "asc";
+    if (string.IsNullOrWhiteSpace(qPageSize)) qPageSize = Model.PageSize.ToString();
+
+}
+
+<div class="el-page">
+
+    <style>
+
+        .er-page {
+            max-width: unset;
+        }
+    </style>
+
+    <!-- Main Table Card -->
+    <div class="el-main-card"  data-total="@Model.TotalRecords"  data-filtered="@Model.FilteredRecords"
+         data-page="@Model.Page"
+         data-pagesize="@Model.PageSize">
+
+        <!-- Card Header -->
+        <div class="el-card-header">
+            <div class="el-card-icon"><i class="ri-list-check-3"></i></div>
+            <h2>Employee List</h2>
+            <div class="el-header-right">
+                <span class="el-count-badge" id="visibleCount"><i class="ri-user-line"></i> @Model.FilteredRecords Records</span>
+            </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="el-toolbar">
+            <div class="el-search-wrap">
+                <i class="ri-search-line"></i>
+                <input type="text" class="el-search-input" id="searchBox" placeholder="Search name, mobile, email, PAN, gender…" value="@qSearch" />
+            </div>
+            <select class="el-filter-sel" id="genderSel" onchange="doSearch()">
+                <option value="">All Genders</option>
+                <option value="Male" selected="@(qGender == "Male")">Male</option>
+                <option value="Female" selected="@(qGender == "Female")">Female</option>
+                <option value="Transgender" selected="@(qGender == "Transgender")">Transgender</option>
+
+            </select>
+           
+            <button type="button" class="el-tool-btn" onclick="exportExcel()"><i class="ri-file-excel-2-line"></i> Excel</button>
+            <button class="el-tool-btn" onclick="printTableOnly()"><i class="ri-printer-line"></i></button>
+        </div>
+
+
+        <!-- TABLE -->
+        <div id="printArea">
+            <div class="el-table-wrap">
+                <table class="el-table" id="empTable">
+                    <thead>
+                        <tr>
+
+                            <th onclick="sortCol(1)"><div class="el-th-inner">NAME <span class="el-sort-ic"><i class="ri-arrow-up-s-line"></i><i class="ri-arrow-down-s-line"></i></span></div></th>
+                            <th onclick="sortCol(2)"><div class="el-th-inner">MOBILE <span class="el-sort-ic"><i class="ri-arrow-up-s-line"></i><i class="ri-arrow-down-s-line"></i></span></div></th>
+                            <th onclick="sortCol(3)"><div class="el-th-inner">EMAIL <span class="el-sort-ic"><i class="ri-arrow-up-s-line"></i><i class="ri-arrow-down-s-line"></i></span></div></th>
+                            <th>GENDER</th>
+                            <th onclick="sortCol(5)"><div class="el-th-inner">DOB <span class="el-sort-ic"><i class="ri-arrow-up-s-line"></i><i class="ri-arrow-down-s-line"></i></span></div></th>
+                            <th>PAN</th>
+                            <th>AADHAAR</th>
+                            <th>ACTION</th>
+                        </tr>
+                    </thead>
+                    <tbody id="empBody">
+                        @if (Model.Items != null && Model.Items.Count > 0)
+                        {
+                            @foreach (var item in Model.Items)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="el-av-cell">
+                                            <div class="el-av av-or">@GetInitials(item.Name)</div>
+                                            <div><div class="el-emp-name">@item.Name</div><div class="el-emp-id">#@item.EmployeeId</div></div>
+                                        </div>
+                                    </td>
+                                    <td>@item.Mobile</td>
+                                    <td>@item.Email</td>
+                                    <td><span class="el-gender gm"><i class="ri-men-line"></i> @item.Gender</span></td>
+                                    <td>@item.Dob?.ToString("dd/MM/yyyy")</td>
+                                    <td><span class="el-masked">@item.PanNo</span></td>
+                                    <td><span class="el-masked">@item.AadhaarNo</span></td>
+                                    <td>
+                                        <div class="el-acts">
+                                            <a href="@Url.Content("~/GetEmpRegById/" + item.EmployeeId)" class="el-act act-view" title="View">
+                                                <i class="ri-eye-line"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="8" style="text-align:center;padding:16px;">No records found</td>
+                            </tr>
+                        }
+
+
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+        
+        <!-- Pagination Bar -->
+
+
+        <div class="el-pag-bar">
+            <div class="el-pag-info" id="pagInfo">
+                Showing <strong id="pgFrom">0</strong>–<strong id="pgTo">0</strong> of <strong id="pgTotal">0</strong> employees
+            </div>
+
+            <div class="el-per-page">
+                Rows per page:
+                <select id="perPageSel">
+                    <option value="5" selected="@(qPageSize == "5")">5</option>
+                    <option value="10" selected="@(qPageSize == "10")">10</option>
+                    <option value="25" selected="@(qPageSize == "25")">25</option>
+                    <option value="50" selected="@(qPageSize == "50")">50</option>
+                </select>
+            </div>
+
+            <div class="el-pag-btns" id="pagBtns"></div>
+        </div>
+
+
+    </div>
+    
+    <!-- /.el-main-card -->
+</div>
+
+
+@functions {
+    private string GetInitials(string? name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return "NA";
+        var parts = name.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        var first = parts.Length > 0 ? parts[0][0].ToString().ToUpper() : "N";
+        var second = parts.Length > 1 ? parts[1][0].ToString().ToUpper() : "";
+        return first + second;
+    }
+}
+
+@section Scripts {
+    <script src="~/js/getallemp.js"></script>  
+}

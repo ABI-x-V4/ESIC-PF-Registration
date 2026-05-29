@@ -1,17 +1,23 @@
-﻿using DataModels;
+﻿using ClosedXML.Excel;
+using DataModels;
 using Insfrastructure.DbModels;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Repository.Employee;
+using System.Data;
+using System.Text;
 
 namespace Services.Employee
 {
     public class DALClass : IEmployee
     {
-
         private readonly EsicPfRegistrationDbContext _context;
-        public DALClass(EsicPfRegistrationDbContext context)
+        private readonly IConfiguration _configuration;
+        public DALClass(EsicPfRegistrationDbContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
 
         public async Task<List<EmployeeRegistrationDTO>> GetAllEmp()
@@ -74,7 +80,8 @@ namespace Services.Employee
                                 : null,
                             PmtPinCode = a.PmtPinCode,
                             PmtMobile = a.PmtMobile,
-                            PmtEmail = a.PmtEmail
+                            PmtEmail = a.PmtEmail,
+                            IsSameAddress = a.IsSameAddress
                         })
                         .FirstOrDefault() ?? new EmpAddressDTO(),
 
@@ -150,7 +157,8 @@ namespace Services.Employee
                             BankName = b.BankName,
                             BranchName = b.BranchName,
                             Micr = b.Micr,
-                            Ifsc = b.Ifsc
+                            Ifsc = b.Ifsc,
+                            BankDoc = b.BankDoc
                         })
                         .FirstOrDefault() ?? new EmpBankDetailDTO(),
 
@@ -214,7 +222,82 @@ namespace Services.Employee
             var data = await GetAllEmp();
             return data.FirstOrDefault(e => e.EmployeeId == id)!;
         }
-        public async Task<string> SaveEmployee(EmployeeRegistrationDTO dto)
+        public async Task<PaginatedResult<EmployeeListRowDto>> GetEmployeesPagedAsync(int page, int pageSize, string? search, string? gender, string sortBy,
+                                                                                      string sortDir)
+        {
+
+
+            var baseQuery = _context.EmployeeRegistrations
+                            .AsNoTracking()
+                            .Select(e => new
+                            {
+                                e.EmployeeId,
+                                e.Name,
+                                e.Gender,
+                                e.Dob,
+                                e.PanNo,
+                                e.AadhaarNo,
+                                Mobile = e.EmpAddresses.Select(a => a.PstMobile).FirstOrDefault(),
+                                Email = e.EmpAddresses.Select(a => a.PstEmail).FirstOrDefault()
+                            });
+
+            var total = await baseQuery.CountAsync();
+
+            if (!string.IsNullOrWhiteSpace(gender))
+                baseQuery = baseQuery.Where(x => x.Gender == gender);
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                search = search.Trim().ToLower();
+                baseQuery = baseQuery.Where(x =>
+                    (x.Name ?? "").ToLower().Contains(search) ||
+                    (x.Mobile ?? "").ToLower().Contains(search) ||
+                    (x.Email ?? "").ToLower().Contains(search) ||
+                    (x.PanNo ?? "").ToLower().Contains(search) ||
+                    (x.AadhaarNo ?? "").ToLower().Contains(search) ||
+                    (x.Gender ?? "").ToLower().Contains(search)
+                );
+            }
+
+            var filtered = await baseQuery.CountAsync();
+
+            bool desc = string.Equals(sortDir, "desc", StringComparison.OrdinalIgnoreCase);
+
+            baseQuery = (sortBy?.ToLower()) switch
+            {
+                "name" => desc ? baseQuery.OrderByDescending(x => x.Name) : baseQuery.OrderBy(x => x.Name),
+                "mobile" => desc ? baseQuery.OrderByDescending(x => x.Mobile) : baseQuery.OrderBy(x => x.Mobile),
+                "email" => desc ? baseQuery.OrderByDescending(x => x.Email) : baseQuery.OrderBy(x => x.Email),
+                "dob" => desc ? baseQuery.OrderByDescending(x => x.Dob) : baseQuery.OrderBy(x => x.Dob),
+                _ => desc ? baseQuery.OrderByDescending(x => x.EmployeeId) : baseQuery.OrderBy(x => x.EmployeeId),
+            };
+
+            var items = await baseQuery
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(x => new EmployeeListRowDto
+                {
+                    EmployeeId = x.EmployeeId,
+                    Name = x.Name,
+                    Mobile = x.Mobile,
+                    Email = x.Email,
+                    Gender = x.Gender,
+                    Dob = x.Dob,
+                    PanNo = x.PanNo,
+                    AadhaarNo = x.AadhaarNo
+                })
+                .ToListAsync();
+
+            return new PaginatedResult<EmployeeListRowDto>
+            {
+                Items = items,
+                TotalRecords = total,
+                FilteredRecords = filtered,
+                Page = page,
+                PageSize = pageSize
+            };
+        }
+        public async Task<int> SaveEmployee(EmployeeRegistrationDTO dto)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
 
@@ -237,7 +320,7 @@ namespace Services.Employee
 
                     if (employee == null)
                     {
-                        return "Employee not found";
+                        return 0;
                     }
 
                     employee.IsEsicavailable = dto.IsEsicAvailable;
@@ -313,7 +396,7 @@ namespace Services.Employee
                 address.PmtPinCode = dto.EmpAddresses.PmtPinCode;
                 address.PmtMobile = dto.EmpAddresses.PmtMobile;
                 address.PmtEmail = dto.EmpAddresses.PmtEmail;
-
+                address.IsSameAddress = dto.EmpAddresses.IsSameAddress;
                 #endregion
 
                 #region Dispensary 
@@ -383,7 +466,7 @@ namespace Services.Employee
                 bank.BranchName = dto.EmpBankDetails.BranchName;
                 bank.Micr = dto.EmpBankDetails.Micr;
                 bank.Ifsc = dto.EmpBankDetails.Ifsc;
-                bank.BankDoc = dto.EmpBankDetails.BankDoc;  
+                bank.BankDoc = dto.EmpBankDetails.BankDoc;
                 #endregion
 
                 #region Nominee
@@ -461,20 +544,187 @@ namespace Services.Employee
                     family.DistrictIdofResiding = item.DistrictIdofResiding;
                     family.MemberPhotoPath = item.MemberPhotoPath;
                     family.ProofDocPath = item.ProofDocPath;
+                    family.TypeOfProof = item.TypeOfProof;
                 }
 
                 #endregion
 
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
-
-                return "Success";
+                return employee.EmployeeId;
             }
             catch (Exception)
             {
                 await transaction.RollbackAsync();
-                return "Failed";
+                return 0;
             }
         }
+        public async Task<byte[]> ExportEmployeeFullReportAsync(EmployeeListRowDto search)
+        {
+            var connectionString = _configuration.GetConnectionString("DefaultConnection");
+
+            var employeeQuery = BuildEmployeeQuery(search, out List<SqlParameter> employeeParams);
+            var nomineeQuery = BuildNomineeQuery(search, out List<SqlParameter> nomineeParams);
+            var familyQuery = BuildFamilyQuery(search, out List<SqlParameter> familyParams);
+
+            DataTable employeeTable = await ExecuteQueryAsync(connectionString, employeeQuery, employeeParams);
+            DataTable nomineeTable = await ExecuteQueryAsync(connectionString, nomineeQuery, nomineeParams);
+            DataTable familyTable = await ExecuteQueryAsync(connectionString, familyQuery, familyParams);
+
+            using var workbook = new XLWorkbook();
+
+            AddWorksheet(workbook, employeeTable, "Employee Details");
+            AddWorksheet(workbook, nomineeTable, "Nominee Details");
+            AddWorksheet(workbook, familyTable, "Family Details");
+
+            using var stream = new MemoryStream();
+            workbook.SaveAs(stream);
+            return stream.ToArray();
+
+        }
+        private static void AddWorksheet(XLWorkbook workbook, DataTable dt, string sheetName)
+        {
+            var ws = workbook.Worksheets.Add(dt, sheetName);
+
+            // Header style
+            var headerRange = ws.Range(1, 1, 1, dt.Columns.Count);
+            headerRange.Style.Font.Bold = true;
+            headerRange.Style.Fill.BackgroundColor = XLColor.RichBlack;
+            headerRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+            ws.Columns().AdjustToContents();
+
+            // Optional: freeze first row
+            ws.SheetView.FreezeRows(1);
+        }
+        private async Task<DataTable> ExecuteQueryAsync(string connectionString, string query, List<SqlParameter> parameters)
+        {
+            var dt = new DataTable();
+
+            await using var con = new SqlConnection(connectionString);
+            await using var cmd = new SqlCommand(query, con);
+
+            if (parameters != null && parameters.Count > 0)
+                cmd.Parameters.AddRange(parameters.ToArray());
+
+            await con.OpenAsync();
+
+            await using var reader = await cmd.ExecuteReaderAsync();
+            dt.Load(reader);
+
+            return dt;
+        }
+        private string BuildEmployeeQuery(EmployeeListRowDto search, out List<SqlParameter> parameters)
+        {
+            parameters = new List<SqlParameter>();
+
+            var sql = new StringBuilder(@" SELECT  e.EmployeeId, CASE WHEN e.IsESICAvailable = 1 THEN 'Yes' ELSE 'No' END AS [Is ESIC Available],
+                                CASE WHEN e.IsESICDisabled = 1 THEN 'Yes' ELSE 'No' END AS [Is IP Disabled], e.TypeOfDisability [Type Of Disability], e.Name, e.FatherOrHusband [Father Or Husband],
+                                e.FatherOrHusbandName [Father Or Husband Name], e.DOB, e.MaritalStatus [Marital Status],e.Gender, e.AadhaarNo, e.PanNo, e.IP_Number, ea.PstAddress [Present Address],
+                                ps.Name AS [Present State], di.Name AS [Present District], ea.PstPinCode [Present PinCode], ea.PstMobile [Present Mobile], 
+                                ea.PstEmail [Present Email], ea.PmtAddress [Permanent Address],
+                                pms.Name AS [Permanent State], pmdi.Name AS [Permanent District], ea.PmtPinCode [Permanent PinCode],
+                                ea.PmtMobile [Residence Mobile No], ea.PmtEmail [Permanent Email], d.DispensaryOrIMPOrmEUDForIP [Dispensary Or IMP Or mEUD For IP],
+                                dsip.Name AS [State For IP], dsdip.Name AS [District For IP], d.DispensaryNameForIP [Dispensary Name For IP],
+                                d.DispensaryOrIMPOrmEUDForFamily [Dispensary Or IMP Or mEUD For Family],
+                                dsf.Name AS [State For Family], dsdf.Name AS [District For Family], d.DispensaryNameForFamily [Dispensary Name For Family],
+                                ed.DOJofCurrentEmployer [Date of Appointment],
+                                CASE WHEN ed.HasPreviousEmployer = 1 THEN 'Yes' ELSE 'No' END AS [Has Previous Employer], ed.EmployerCode [Employer Code],
+                                ed.PreviousInsuarenceNo [Previous Insuarence No],
+                                ed.EmployerName [Employer Name], ed.EmployerAddress [Employer Address], eds.Name AS [Employer State], edd.Name AS [Employer District], ed.Pincode,
+                                eb.AccountNumber, eb.TypeofAccount, eb.BankName, eb.BranchName, eb.MICR, eb.IFSC
+                                FROM EmployeeRegistration e
+                                INNER JOIN EmpAddress ea ON e.EmployeeId = ea.EmployeeId
+                                INNER JOIN DispenseryDetails d ON e.EmployeeId = d.EmployeeId
+                                INNER JOIN EmploymentDetails ed ON e.EmployeeId = ed.EmployeeId
+                                INNER JOIN States ps ON ps.Id = ea.PstStateId
+                                INNER JOIN States pms ON pms.Id = ea.PmtStateId
+                                INNER JOIN Districts di ON di.Id = ea.PstDistrictId
+                                INNER JOIN Districts pmdi ON pmdi.Id = ea.PmtDistrictId
+                                INNER JOIN States dsip ON dsip.Id = d.StateIdForIP
+                                INNER JOIN States dsf ON dsf.Id = d.StateIdForFamily
+                                INNER JOIN Districts dsdip ON dsdip.Id = d.DistrictIdForIP
+                                INNER JOIN Districts dsdf ON dsdf.Id = d.DistrictIdForFamily
+                                LEFT JOIN EmpBankDetails eb ON e.EmployeeId = eb.EmployeeId
+                                LEFT JOIN States eds ON eds.Id = ed.StateId
+                                LEFT JOIN Districts edd ON edd.Id = ed.DistrictId
+                                WHERE 1=1 ");
+
+            AppendCommonFilters(sql, parameters, search, "e", includeMobileFilter: true);
+
+            sql.Append(" ORDER BY e.EmployeeId DESC");
+
+            return sql.ToString();
+        }
+        private string BuildNomineeQuery(EmployeeListRowDto search, out List<SqlParameter> parameters)
+        {
+            parameters = new List<SqlParameter>();
+
+            var sql = new StringBuilder(@"SELECT  n.EmployeeId, n.Name, n.DOB, n.Relationship, n.Address, s.Name AS State, d.Name AS District,
+                                         n.Pincode, n.IsFamilyMember [Is Family Member]
+                                        FROM EmployeeRegistration e
+                                        INNER JOIN NomineeDetails n ON e.EmployeeId = n.EmployeeId
+                                        INNER JOIN States s ON s.Id = n.StateId
+                                        INNER JOIN Districts d ON d.Id = n.DistrictId
+                                        WHERE 1=1 ");
+
+            AppendCommonFilters(sql, parameters, search, "e", includeMobileFilter: false);
+
+            sql.Append(" ORDER BY n.EmployeeId DESC");
+
+            return sql.ToString();
+        }
+        private string BuildFamilyQuery(EmployeeListRowDto search, out List<SqlParameter> parameters)
+        {
+            parameters = new List<SqlParameter>();
+
+            var sql = new StringBuilder(@" SELECT f.EmployeeId, f.Name, f.DOB, f.Relationship, f.Gender, f.ResidingWith [Residing With], s.Name AS State, d.Name AS District,
+                                            f.TypeOfProof [Type Of Proof]
+                                            FROM EmployeeRegistration e
+                                            INNER JOIN FamilyParticulars f ON e.EmployeeId = f.EmployeeId
+                                            INNER JOIN States s ON s.Id = f.StateIdofResiding
+                                            INNER JOIN Districts d ON d.Id = f.DistrictIdofResiding
+                                            WHERE 1=1 ");
+            AppendCommonFilters(sql, parameters, search, "e", includeMobileFilter: false);
+
+            sql.Append(" ORDER BY f.EmployeeId DESC");
+
+            return sql.ToString();
+
+        }
+        private void AppendCommonFilters(StringBuilder sql, List<SqlParameter> parameters, EmployeeListRowDto search, string employeeAlias, 
+                                         bool includeMobileFilter)
+        {
+            if (search.EmployeeId > 0)
+            {
+                sql.Append($" AND {employeeAlias}.EmployeeId = @EmployeeId");
+                parameters.Add(new SqlParameter("@EmployeeId", search.EmployeeId));
+            }
+
+            if (!string.IsNullOrWhiteSpace(search.Name))
+            {
+                sql.Append($" AND {employeeAlias}.Name LIKE @Name");
+                parameters.Add(new SqlParameter("@Name", $"%{search.Name.Trim()}%"));
+            }
+
+            if (!string.IsNullOrWhiteSpace(search.AadhaarNo))
+            {
+                sql.Append($" AND {employeeAlias}.AadhaarNo LIKE @AadhaarNo");
+                parameters.Add(new SqlParameter("@AadhaarNo", $"%{search.AadhaarNo.Trim()}%"));
+            }
+
+            if (!string.IsNullOrWhiteSpace(search.PanNo))
+            {
+                sql.Append($" AND {employeeAlias}.PanNo LIKE @PanNo");
+                parameters.Add(new SqlParameter("@PanNo", $"%{search.PanNo.Trim()}%"));
+            }
+
+            if (includeMobileFilter && !string.IsNullOrWhiteSpace(search.Mobile))
+            {
+                sql.Append(" AND (ea.PstMobile LIKE @MobileNo OR ea.PmtMobile LIKE @MobileNo)");
+                parameters.Add(new SqlParameter("@MobileNo", $"%{search.Mobile.Trim()}%"));
+            }
+        }
+
     }
 }
