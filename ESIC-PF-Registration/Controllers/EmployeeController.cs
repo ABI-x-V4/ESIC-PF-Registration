@@ -27,7 +27,7 @@ namespace ESIC_PF_Registration.Controllers
         [Authorize]
         [HttpGet("GetAllEmpReg")]
         public async Task<IActionResult> GetAllEmpReg(int page = 1, int pageSize = 5, string? search = null, string? gender = null,
-                                                           string sortBy = "Name", string sortDir = "asc")
+                                                      string? sortBy = null, string? sortDir = null)
         {
 
             var result = await _iemp.GetEmployeesPagedAsync(page, pageSize, search, gender, sortBy, sortDir);

@@ -100,16 +100,35 @@ namespace Services.PF
 
             var filtered = await baseQuery.CountAsync();
 
-            bool desc = string.Equals(sortDir, "desc", StringComparison.OrdinalIgnoreCase);
-
-            baseQuery = (sortBy?.ToLower()) switch
+            if (string.IsNullOrWhiteSpace(sortBy))
             {
-                "name" => desc ? baseQuery.OrderByDescending(x => x.AadhaarFullName) : baseQuery.OrderBy(x => x.AadhaarFullName),
-                "mobile" => desc ? baseQuery.OrderByDescending(x => x.MobileNo) : baseQuery.OrderBy(x => x.MobileNo),
-                "email" => desc ? baseQuery.OrderByDescending(x => x.Emailid) : baseQuery.OrderBy(x => x.Emailid),
-                "dob" => desc ? baseQuery.OrderByDescending(x => x.AadhaarDob) : baseQuery.OrderBy(x => x.AadhaarDob),
-                _ => desc ? baseQuery.OrderByDescending(x => x.Id) : baseQuery.OrderBy(x => x.Id),
-            };
+                baseQuery = baseQuery.OrderByDescending(x => x.Id);
+            }
+            else
+            {
+                bool desc = string.Equals(sortDir, "desc", StringComparison.OrdinalIgnoreCase);
+
+                baseQuery = (sortBy.ToLower()) switch
+                {
+                    "name" => desc
+                        ? baseQuery.OrderByDescending(x => x.AadhaarFullName)
+                        : baseQuery.OrderBy(x => x.AadhaarFullName),
+
+                    "mobile" => desc
+                        ? baseQuery.OrderByDescending(x => x.MobileNo)
+                        : baseQuery.OrderBy(x => x.MobileNo),
+
+                    "email" => desc
+                        ? baseQuery.OrderByDescending(x => x.Emailid)
+                        : baseQuery.OrderBy(x => x.Emailid),
+                    "dob" => desc
+                        ? baseQuery.OrderByDescending(x => x.AadhaarDob)
+                        : baseQuery.OrderBy(x => x.AadhaarDob),
+
+                    _ => baseQuery.OrderByDescending(x => x.Id)
+                };
+            }
+
 
             var items = await baseQuery
                 .Skip((page - 1) * pageSize)

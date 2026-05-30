@@ -18,7 +18,7 @@ namespace ESIC_PF_Registration.Controllers
         [Authorize]
         [HttpGet("GetAllPf")]
         public async Task<IActionResult> GetAllPf(int page = 1, int pageSize = 5, string? search = null, string? gender = null,
-                                                           string sortBy = "Name", string sortDir = "asc")
+                                                           string? sortBy = null, string? sortDir = null)
         {
 
             var result = await _ipf.GetPfEmployeesPagedAsync(page, pageSize, search, gender, sortBy, sortDir);

@@ -268,16 +268,36 @@ namespace Services.Employee
 
             var filtered = await baseQuery.CountAsync();
 
-            bool desc = string.Equals(sortDir, "desc", StringComparison.OrdinalIgnoreCase);
 
-            baseQuery = (sortBy?.ToLower()) switch
+            if (string.IsNullOrWhiteSpace(sortBy))
             {
-                "name" => desc ? baseQuery.OrderByDescending(x => x.Name) : baseQuery.OrderBy(x => x.Name),
-                "mobile" => desc ? baseQuery.OrderByDescending(x => x.Mobile) : baseQuery.OrderBy(x => x.Mobile),
-                "email" => desc ? baseQuery.OrderByDescending(x => x.Email) : baseQuery.OrderBy(x => x.Email),
-                "dob" => desc ? baseQuery.OrderByDescending(x => x.Dob) : baseQuery.OrderBy(x => x.Dob),
-                _ => desc ? baseQuery.OrderByDescending(x => x.EmployeeId) : baseQuery.OrderBy(x => x.EmployeeId),
-            };
+                baseQuery = baseQuery.OrderByDescending(x => x.EmployeeId);
+            }
+            else
+            {
+                bool desc = string.Equals(sortDir, "desc", StringComparison.OrdinalIgnoreCase);
+
+                baseQuery = (sortBy.ToLower()) switch
+                {
+                    "name" => desc
+                        ? baseQuery.OrderByDescending(x => x.Name)
+                        : baseQuery.OrderBy(x => x.Name),
+
+                    "mobile" => desc
+                        ? baseQuery.OrderByDescending(x => x.Mobile)
+                        : baseQuery.OrderBy(x => x.Mobile),
+
+                    "email" => desc
+                        ? baseQuery.OrderByDescending(x => x.Email)
+                        : baseQuery.OrderBy(x => x.Email),
+
+                    "dob" => desc
+                        ? baseQuery.OrderByDescending(x => x.Dob)
+                        : baseQuery.OrderBy(x => x.Dob),
+
+                    _ => baseQuery.OrderByDescending(x => x.EmployeeId)
+                };
+            }
 
             var items = await baseQuery
                 .Skip((page - 1) * pageSize)
