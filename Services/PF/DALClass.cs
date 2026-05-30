@@ -164,8 +164,7 @@ namespace Services.PF
                     Aadhaarpath = dto.Aadhaarpath!,
                     PanPath = dto.PanPath!,
                     Uan = dto.Uan,
-                    CreatedDate = DateTime.Now,
-                    EmployeeId= dto.EmployeeId
+                    CreatedDate = DateTime.Now
                 };
                 _context.PfRegistrations.Add(entity);
                 await _context.SaveChangesAsync();

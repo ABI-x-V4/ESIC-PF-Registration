@@ -6,7 +6,6 @@ namespace DataModels
     public class PfRegistrationDTO
     {
         public int Id { get; set; }
-        public int? EmployeeId { get; set; }
         [Required(ErrorMessage = "Full Name is required.")]
         public string AadhaarFullName { get; set; } = null!;
         [Required(ErrorMessage = "Date of Birth is required.")]

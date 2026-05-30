@@ -1,6 +1,6 @@
 ﻿$(function () {
 
-    $(document).on("change", ".stateDropdown", function () {   
+    $(document).on("change", ".stateDropdown", function () {
         var stateId = $(this).val();
         var targetDistrictId = $(this).data("target");
         var districtDropdown = $("#" + targetDistrictId);
@@ -13,7 +13,7 @@
         $.get('/Employee/GetDistrictsByState', { stateId: stateId }, function (data) {
             console.log(data);
             $.each(data, function (i, item) {
-                console.log(item); 
+                console.log(item);
                 districtDropdown.append(
                     '<option value="' + item.id + '">' + item.districtName + '</option>'
                 );
@@ -55,7 +55,7 @@ $(function () {
 
         setTimeout(function () {
             permanentDistrictID.value = presentDistrictID.value;
-        }, 300); 
+        }, 300);
     }
 
     checkbox.addEventListener("change", function () {
@@ -132,11 +132,11 @@ $(function () {
 // Nominee 
 let nomineeList = [];
 let familyList = [];
-
+let currentFamilyDocs = [];
 document.addEventListener("DOMContentLoaded", function () {
 
     const dropdown = document.getElementById("esicDropdown");
-    const ipBlock = document.getElementById("ipBlock");    
+    const ipBlock = document.getElementById("ipBlock");
 
     function toggleIpField() {
         if (dropdown.value === "1") {
@@ -174,7 +174,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         nomineeList.push(nominee);
         rebuildNomineeHiddenInputs();
-        console.log(nomineeList);       
+        console.log(nomineeList);
         renderTable();
         clearFields();
     };
@@ -271,11 +271,265 @@ document.addEventListener("DOMContentLoaded", function () {
 
         return true;
     }
+    // -----------------------------
+    // FAMILY DOCUMENTS (MULTIPLE)
+    // -----------------------------
+    window.addFamilyDocument = function () {
+        const proofTypeEl = document.getElementById("familyDocProofType");
+        const fileInput = document.getElementById("familyDocFile");
+
+        const proofType = proofTypeEl.value;
+        const file = fileInput.files[0];
+
+        if (!proofType) {
+            alert("Please select proof type.");
+            return;
+        }
+
+        if (!file) {
+            alert("Please upload proof document.");
+            return;
+        }
+
+        const isValid = validateSelectedFile(
+            file,
+            [".pdf", ".jpg", ".jpeg"],
+            0,
+            200,
+            "Proof document"
+        );
+
+        if (!isValid) {
+            fileInput.value = "";
+            return;
+        }
+
+        const alreadyExists = currentFamilyDocs.some(x =>
+            x.docName.toLowerCase() === proofType.toLowerCase()
+        );
+
+        if (alreadyExists) {
+            alert("This proof type is already added.");
+            return;
+        }
+        ``
+        currentFamilyDocs.push({
+            docName: proofType,
+            fileName: file.name,
+            fileObj: file
+        });
+
+        renderCurrentFamilyDocsTable();
+        clearFamilyDocumentFields();
+    };
+
+    window.deleteCurrentFamilyDoc = function (index) {
+        currentFamilyDocs.splice(index, 1);
+        renderCurrentFamilyDocsTable();
+    };
+
+    function renderCurrentFamilyDocsTable() {
+        const tbody = document.querySelector("#familyDocsTable tbody");
+        tbody.innerHTML = "";
+
+        if (currentFamilyDocs.length === 0) {
+            tbody.innerHTML = `
+                        <tr id="familyDocsEmptyRow">
+                            <td colspan="4" class="text-center text-muted">No document added</td>
+                        </tr>
+                    `;
+            return;
+        }
+
+        const style = document.createElement("style");
+
+        style.innerHTML = `
+                        .thumbb .img-thumbnail-clickable {
+                            cursor: pointer;
+                            transition: opacity 0.2s;
+                        }
+
+                            .thumbb .img-thumbnail-clickable:hover {
+                                opacity: 0.8;
+                            }
+
+                        .thumbb img {
+                            height: 100px;
+                            width: 100px;
+                            object-fit: cover;
+                        }
+
+                        .b-red {
+                            background: red;
+                            background-color: red;
+                            border: 1px solid #fff;
+                            --bs-btn-close-bg: none;
+                            opacity: 1;
+                            color: #fff;
+                            line-height: 15px;
+                        }
+
+                            .b-red:hover {
+                                color: #fff !important;
+                                opacity: 1 !important;
+                            }
+
+                        .pdf-thumbb img {
+                            cursor: pointer;
+                            transition: opacity 0.2s;
+                            height: 100px;
+                            width: 100px;
+                            object-fit: cover;
+                            padding: .25rem;
+                            background-color: #fff;
+                            border: 1px solid rgb(222 226 230);
+                            border-radius: 0.375rem;
+                            max-width: 100%;
+                        }
+                            `;
+
+        document.head.appendChild(style);
+
+        currentFamilyDocs.forEach((doc, index) => {
+            //const row = `
+            //            <tr>
+            //                <td>${index + 1}</td>
+            //                <td>${escapeHtml(doc.docName)}</td>
+            //                <td>${escapeHtml(doc.fileName)}</td>
+            //                <td>
+            //                    <button type="button" class="btn btn-sm btn-danger" onclick="deleteCurrentFamilyDoc(${index})">
+            //                        Delete
+            //                    </button>
+            //                </td>
+            //            </tr>
+            //        `;
+            const fileUrl = URL.createObjectURL(doc.fileObj);
+
+            const extension = doc.fileName.split('.').pop().toLowerCase();
+
+            let previewHtml = '';
+
+            if (["jpg", "jpeg", "png", "gif", "webp"].includes(extension)) {
+
+                previewHtml = `
+                        <a href="javascript:void(0)"
+                           class="el-act act-view"
+                           style="width:80px !important;"
+                           data-bs-toggle="modal"
+                           data-bs-target="#docPreviewModal_${index}">
+                            <i class="ri-eye-line me-1"></i> View
+                        </a>
+
+                          <!-- Image Modal -->
+                        <div class="modal fade"
+                             id="docPreviewModal_${index}"
+                             tabindex="-1"
+                             aria-hidden="true">
+
+                            <div class="modal-dialog modal-dialog-centered modal-lg">
+                                <div class="modal-content border-0">
+
+                                    <div class="modal-body p-0 position-relative">
+
+                                        <button type="button" class="btn-close b-red position-absolute top-0 end-0 m-3" data-bs-dismiss="modal"
+                                                            aria-label="Close">
+                                                        <i class="ri-close-line"></i>
+                                                    </button>
+                                        <img src="${fileUrl}"
+                                             class="img-fluid rounded w-100"
+                                             alt="Preview" />
+
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    `;
+            }
+            else if (extension === "pdf") {
+
+                previewHtml = `
+                            <a href="javascript:void(0)"
+                               class="el-act act-view"
+                               style="width:80px !important;"
+                               data-bs-toggle="modal"
+                               data-bs-target="#docPreviewModal_${index}">
+                                <i class="ri-eye-line me-1"></i> View
+                            </a>
+
+                            <!-- PDF Modal -->
+                            <div class="modal fade"
+                                 id="docPreviewModal_${index}"
+                                 tabindex="-1"
+                                 aria-hidden="true">
+
+                                <div class="modal-dialog modal-dialog-centered modal-xl">
+                                    <div class="modal-content">
+                                        <div class="modal-body p-0">
+                                        <button type="button" class="btn-close b-red position-absolute top-0 end-0 m-3" data-bs-dismiss="modal"
+                                                            aria-label="Close">
+                                                        <i class="ri-close-line"></i>
+                                                    </button>
+                                            <iframe src="${fileUrl}"
+                                                    style="width:100%;height:80vh;border:0;">
+                                            </iframe>
+
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+            }
+            else {
+
+                previewHtml = `
+                                <a href="${fileUrl}"
+                                   target="_blank"
+                                   class="btn btn-sm btn-outline-secondary">
+                                    Open
+                                </a>
+                            `;
+            }
+
+            const row = `
+                            <tr>
+                                <td>${index + 1}</td>
+
+                                <td>
+                                    ${escapeHtml(doc.docName)}
+                                </td>
+
+                                <td>
+                                    ${escapeHtml(doc.fileName)}
+                                </td>
+
+                                <td>
+                                    ${previewHtml}
+                                </td>
+
+                                <td>
+                                    <button type="button"
+                                            class="btn btn-sm btn-danger"
+                                            onclick="deleteCurrentFamilyDoc(${index})">
+                                        Delete
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+            tbody.insertAdjacentHTML("beforeend", row);
+        });
+    }
+
+    function clearFamilyDocumentFields() {
+        document.getElementById("familyDocProofType").value = "";
+        document.getElementById("familyDocFile").value = "";
+    }
 
 
     window.addFamily = function () {
         let photoFile = document.getElementById("familyPhoto").files[0];
-        let proofFile = document.getElementById("proofFile").files[0];
+        // let proofFile = document.getElementById("proofFile").files[0];
 
         const familystateDropdown = document.getElementById('familystate');
         const familydistrictDropdown = document.getElementById('familydistrict');
@@ -293,11 +547,11 @@ document.addEventListener("DOMContentLoaded", function () {
             district: familydistrictDropdown.selectedIndex > 0 ? familydistrictDropdown.value : "",
             districtName: familydistrictDropdown.selectedIndex > 0 ? familydistrictDropdown.options[familydistrictDropdown.selectedIndex].text : "",
             photo: photoFile ? photoFile.name : "",
-            proofType: document.getElementById("familyProofType").value,
-            proof: proofFile ? proofFile.name : "",
+            //proofType: document.getElementById("familyProofType").value,
+            //proof: proofFile ? proofFile.name : "",
 
             photoFileObj: photoFile,
-            proofFileObj: proofFile
+            documents: [...currentFamilyDocs]
 
         };
 
@@ -311,15 +565,15 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        if (!family.proofType) {
-            alert("Please select proof type");
-            return;
-        }
+        //if (!family.proofType) {
+        //    alert("Please select proof type");
+        //    return;
+        //}
 
-        if (!proofFile) {
-            alert("Please upload proof file");
-            return;
-        }
+        //if (!proofFile) {
+        //    alert("Please upload proof file");
+        //    return;
+        //}
 
         const isPhotoValid = validateSelectedFile(
             photoFile,
@@ -335,23 +589,31 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         // Proof document validation: PDF/JPG/JPEG only, max 200 KB
-        const isProofValid = validateSelectedFile(
-            proofFile,
-            [".pdf", ".jpg", ".jpeg"],
-            0,
-            200,
-            "Proof document"
-        );
+        //const isProofValid = validateSelectedFile(
+        //    proofFile,
+        //    [".pdf", ".jpg", ".jpeg"],
+        //    0,
+        //    200,
+        //    "Proof document"
+        //);
 
-        if (!isProofValid) {
-            document.getElementById("proofFile").value = "";
+        //if (!isProofValid) {
+        //    document.getElementById("proofFile").value = "";
+        //    return;
+        //}
+        if (family.documents.length === 0) {
+            alert("Please add at least one proof document.");
+            return;
+        }
+        if (family.documents.length === 1) {
+            alert("Minimum 2 proof documents are required.");
             return;
         }
 
         familyList.push(family);
 
-        photoDT.items.add(photoFile);
-        proofDT.items.add(proofFile);
+        //photoDT.items.add(photoFile);
+        // proofDT.items.add(proofFile);
 
         document.getElementById("FamilyMemberPhotosInput").files = photoDT.files;
         document.getElementById("FamilyProofDocsInput").files = proofDT.files;
@@ -367,7 +629,13 @@ document.addEventListener("DOMContentLoaded", function () {
         photoDT = new DataTransfer();
         proofDT = new DataTransfer();
 
+
         familyList.forEach((f, i) => {
+
+            if (f.photoFileObj) {
+                photoDT.items.add(f.photoFileObj);
+            }
+
             container.insertAdjacentHTML("beforeend", `
             <input type="hidden" name="FamilyParticulars[${i}].Name" value="${escapeHtml(f.name)}" />
             <input type="hidden" name="FamilyParticulars[${i}].Dob" value="${f.dob}" />
@@ -377,17 +645,38 @@ document.addEventListener("DOMContentLoaded", function () {
             <input type="hidden" name="FamilyParticulars[${i}].StateIdofResiding" value="${f.state || ''}" />
             <input type="hidden" name="FamilyParticulars[${i}].DistrictIdofResiding" value="${f.district || ''}" />
             <input type="hidden" name="FamilyParticulars[${i}].StateName" value="${f.stateName}" />
-            <input type="hidden" name="FamilyParticulars[${i}].DistrictName" value="${f.districtName}" />
-            <input type="hidden" name="FamilyParticulars[${i}].TypeOfProof" value="${f.proofType}" />
+            <input type="hidden" name="FamilyParticulars[${i}].DistrictName" value="${f.districtName}" />           
         `);
+            // add family documents in nested index
+            f.documents.forEach((d, j) => {
+                if (d.fileObj) {
+                    proofDT.items.add(d.fileObj);
+                }
+
+                container.insertAdjacentHTML("beforeend", `
+                            <input type="hidden" name="FamilyParticulars[${i}].familyParticularsDocumentDTOs[${j}].DocName" value="${escapeHtml(d.docName)}" />
+                        `);
+            });
         });
-    }    
+
+        document.getElementById("FamilyMemberPhotosInput").files = photoDT.files;
+        document.getElementById("FamilyProofDocsInput").files = proofDT.files;
+    }
     function renderFamilyTable() {
 
         let tbody = document.querySelector("#familyTable tbody");
         tbody.innerHTML = "";
 
         familyList.forEach((item, index) => {
+
+            let docsHtml = "";
+            if (item.documents && item.documents.length > 0) {
+                docsHtml = item.documents.map((d, i) =>
+                    `<div>${i + 1}. ${escapeHtml(d.docName)} - ${escapeHtml(d.fileName)}</div>`
+                ).join("");
+            } else {
+                docsHtml = `<span class="text-muted">No docs</span>`;
+            }
 
             let row = `
             <tr>
@@ -399,8 +688,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 <td>${item.stateName || ''}</td>
                 <td>${item.districtName || ''}</td>
                 <td>${item.photo}</td>
-                <td>${item.proofType}</td>
-                <td>${item.proof}</td>
+                <td>${docsHtml}</td>
                 <td><button onclick="deleteFamilyRow(${index})">Delete</button></td>
             </tr>
         `;
@@ -413,7 +701,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let proofDT = new DataTransfer();
     window.deleteFamilyRow = function (index) {
         familyList.splice(index, 1);
-        rebuildFamilyHiddenInputs(); 
+        rebuildFamilyHiddenInputs();
         renderFamilyTable();
     };
 
@@ -431,7 +719,7 @@ function clearFields() {
     document.getElementById('relationship').value = "";
     document.getElementById('address').value = "";
     document.getElementById('nomineeStateDropdown').value = "";
-   // document.getElementById('nomineeDistrictDropdown').value = "";
+    // document.getElementById('nomineeDistrictDropdown').value = "";
     document.getElementById("nomineeDistrictDropdown").innerHTML = '<option value="">-- Select District --</option>';
     document.getElementById('pincode').value = "";
     document.getElementById('isFamilyMember').value = "";
@@ -445,6 +733,8 @@ document.getElementById("familyResiding").addEventListener("change", function ()
     } else {
         document.getElementById("familyStateContainer").style.display = "none";
         document.getElementById("familyDistrictContainer").style.display = "none";
+        document.getElementById("familystate").value = "";
+        document.getElementById("familydistrict").innerHTML = '<option value="">-- Select District --</option>';
     }
 });
 
@@ -455,7 +745,7 @@ function escapeHtml(str) {
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
 }
-function clearFamilyFields() {   
+function clearFamilyFields() {
 
     document.getElementById("familyName").value = "";
     document.getElementById("familyDob").value = "";
@@ -463,17 +753,31 @@ function clearFamilyFields() {
     document.getElementById("familyGender").value = "";
     document.getElementById("familyResiding").value = "";
     document.getElementById("familystate").value = "";
-    document.getElementById("familydistrict").value = "";
+    document.getElementById("familydistrict").innerHTML = '<option value="">-- Select District --</option>';
     document.getElementById("familyPhoto").value = "";
-    document.getElementById("familyProofType").value = "";
-    document.getElementById("proofFile").value = "";
+    //document.getElementById("familyProofType").value = "";
+    //document.getElementById("proofFile").value = "";
 
     document.getElementById("familyStateContainer").style.display = "none";
     document.getElementById("familyDistrictContainer").style.display = "none";
 
+    currentFamilyDocs = [];
+    const tbody = document.querySelector("#familyDocsTable tbody");
+    tbody.innerHTML = `
+                <tr id="familyDocsEmptyRow">
+                    <td colspan="4" class="text-center text-muted">No document added</td>
+                </tr>
+            `;
+
+    document.getElementById("familyDocProofType").value = "";
+    document.getElementById("familyDocFile").value = "";
+
 }
 
 document.getElementById("AadhaarFile").addEventListener("change", function () {
+
+    //const preview = document.getElementById("aadhaarPreview");
+    //preview.innerHTML = "";
 
     if (this.files.length === 0) return;
 
@@ -487,6 +791,7 @@ document.getElementById("AadhaarFile").addEventListener("change", function () {
         this.value = "";
         return;
     }
+
 });
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -506,7 +811,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (!allowedExtensions.includes(extension)) {
                 alert("Only JPG/JPEG files are allowed.");
 
-                this.value = ""; 
+                this.value = "";
                 return;
             }
 
@@ -542,7 +847,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (!allowedExtensions.includes(extension)) {
                 alert("Only PDF, JPG, and JPEG files are allowed.");
 
-                this.value = ""; 
+                this.value = "";
                 return;
             }
 
@@ -564,7 +869,7 @@ document.addEventListener("DOMContentLoaded", function () {
 function validateFileInput(input) {
 
     const file = input.files[0];
-  //  const errorSpan = input.nextElementSibling;
+    //  const errorSpan = input.nextElementSibling;
 
     if (!file) return;
 
@@ -600,6 +905,15 @@ function validateFileInput(input) {
 
 
 document.addEventListener("DOMContentLoaded", function () {
+
+    // image only
+    bindImagePreview("PanFile", "panPreview");
+    bindImagePreview("PhotoFile", "SelfPhotoPreview");
+    bindImagePreview("familyPhoto", "FamilyMemberPhotoPreview");
+
+    // image + pdf
+    bindFilePreview("AadhaarFile", "aadhaarPreview");
+    bindFilePreview("bankDocFile", "bankDocPreview");
 
     const form = document.getElementById("employeeForm");
     const btnPreview = document.getElementById("btnPreview");
@@ -728,11 +1042,11 @@ document.addEventListener("DOMContentLoaded", function () {
             el.disabled = !enabled;
         });
 
-       
+
         if (!enabled) {
             section.querySelectorAll(".field-validation-error, .text-danger")
                 .forEach(span => {
-                   
+
                     if (span.hasAttribute("data-valmsg-for") || span.classList.contains("field-validation-error")) {
                         span.textContent = "";
                     }
@@ -747,7 +1061,251 @@ document.addEventListener("DOMContentLoaded", function () {
     checkbox.addEventListener("change", togglePrevEmployerFields);
 });
 
+function bindImagePreview(inputId, previewId) {
 
+    const input = document.getElementById(inputId);
+    const style = document.createElement("style");
+
+    style.innerHTML = `
+                        .thumbb .img-thumbnail-clickable {
+                            cursor: pointer;
+                            transition: opacity 0.2s;
+                        }
+
+                            .thumbb .img-thumbnail-clickable:hover {
+                                opacity: 0.8;
+                            }
+
+                        .thumbb img {
+                            height: 100px;
+                            width: 100px;
+                            object-fit: cover;
+                        }
+
+                        .b-red {
+                            background: red;
+                            background-color: red;
+                            border: 1px solid #fff;
+                            --bs-btn-close-bg: none;
+                            opacity: 1;
+                            color: #fff;
+                            line-height: 15px;
+                        }
+
+                            .b-red:hover {
+                                color: #fff !important;
+                                opacity: 1 !important;
+                            }
+
+                        .pdf-thumbb img {
+                            cursor: pointer;
+                            transition: opacity 0.2s;
+                            height: 100px;
+                            width: 100px;
+                            object-fit: cover;
+                            padding: .25rem;
+                            background-color: #fff;
+                            border: 1px solid rgb(222 226 230);
+                            border-radius: 0.375rem;
+                            max-width: 100%;
+                        }
+                            `;
+    document.head.appendChild(style);
+    input.addEventListener("change", function () {
+
+        const preview = document.getElementById(previewId);
+
+        preview.innerHTML = "";
+
+        if (this.files.length === 0)
+            return;
+
+        const file = this.files[0];
+
+        const extension = file.name.split('.').pop().toLowerCase();
+
+        const allowed = ["jpg", "jpeg"];
+
+        if (!allowed.includes(extension)) {
+
+            alert("Only JPG and JPEG image files are allowed.");
+
+            this.value = "";
+            return;
+        }
+
+        const fileUrl = URL.createObjectURL(file);
+
+        const modalId = `${inputId}_ImageModal`;
+
+        preview.innerHTML = `
+        
+            <div class="thumbb text-center">
+                 <div class="mt-2">
+                     <a href="javascript:void(0)" class="el-act act-view" data-bs-toggle="modal" data-bs-target="#${modalId}" title="View" style="width:80px !important;">
+                            <i class="ri-eye-line me-1"></i> View
+                     </a>
+                 </div>
+            </div>
+
+            <!-- Modal -->
+            <div class="modal fade" id="${modalId}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content border-0">
+                        <div class="modal-body p-0">
+                            <button type="button"
+                                    class="btn-close b-red position-absolute top-0 end-0 m-3"
+                                    data-bs-dismiss="modal">
+                                <i class="ri-close-line"></i>
+                            </button>
+                            <img src="${fileUrl}"
+                                 class="img-fluid rounded w-100" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+}
+
+function bindFilePreview(inputId, previewId) {
+
+    const input = document.getElementById(inputId);
+    const style = document.createElement("style");
+
+    style.innerHTML = `
+                        .thumbb .img-thumbnail-clickable {
+                            cursor: pointer;
+                            transition: opacity 0.2s;
+                        }
+
+                            .thumbb .img-thumbnail-clickable:hover {
+                                opacity: 0.8;
+                            }
+
+                        .thumbb img {
+                            height: 100px;
+                            width: 100px;
+                            object-fit: cover;
+                        }
+
+                        .b-red {
+                            background: red;
+                            background-color: red;
+                            border: 1px solid #fff;
+                            --bs-btn-close-bg: none;
+                            opacity: 1;
+                            color: #fff;
+                            line-height: 15px;
+                        }
+
+                            .b-red:hover {
+                                color: #fff !important;
+                                opacity: 1 !important;
+                            }
+
+                        .pdf-thumbb img {
+                            cursor: pointer;
+                            transition: opacity 0.2s;
+                            height: 100px;
+                            width: 100px;
+                            object-fit: cover;
+                            padding: .25rem;
+                            background-color: #fff;
+                            border: 1px solid rgb(222 226 230);
+                            border-radius: 0.375rem;
+                            max-width: 100%;
+                        }
+                            `;
+    document.head.appendChild(style);
+    input.addEventListener("change", function () {
+
+        const preview = document.getElementById(previewId);
+
+        preview.innerHTML = "";
+
+        if (this.files.length === 0)
+            return;
+
+        const file = this.files[0];
+
+        const extension = file.name.split('.').pop().toLowerCase();
+
+        const fileUrl = URL.createObjectURL(file);
+
+        const modalId = `${inputId}_FileModal`;
+
+        // IMAGE
+        if (["jpg", "jpeg"].includes(extension)) {
+
+            preview.innerHTML = `
+            
+                <div class="thumbb text-center">                   
+                    <div class="mt-2">
+                        <a href="javascript:void(0)" class="el-act act-view" data-bs-toggle="modal" data-bs-target="#${modalId}" title="View" style="width:80px !important;">
+                            <i class="ri-eye-line me-1"></i> View
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Modal -->
+                <div class="modal fade" id="${modalId}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content border-0">
+                            <div class="modal-body p-0">
+                                <button type="button" class="btn-close b-red position-absolute top-0 end-0 m-3" data-bs-dismiss="modal">
+                                    <i class="ri-close-line"></i>
+                                </button>
+                                <img src="${fileUrl}" class="img-fluid rounded w-100" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // PDF
+        else if (extension === "pdf") {
+
+            preview.innerHTML = `
+            
+                <div class="pdf-thumbb text-center">
+                    <div class="mt-2">
+                        <a href="javascript:void(0)" class="el-act act-view" data-bs-toggle="modal" data-bs-target="#${modalId}" title="View"  style="width:80px !important;">
+                            <i class="ri-eye-line me-1"></i> View
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Modal -->
+                <div class="modal fade" id="${modalId}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-xl">
+                        <div class="modal-content">     
+                            <div class="modal-body p-0">
+                                  <button type="button" class="btn-close b-red position-absolute top-0 end-0 m-3" data-bs-dismiss="modal">
+                                    <i class="ri-close-line"></i>
+                                </button>
+                                <iframe src="${fileUrl}"
+                                        style="width:100%;height:80vh;border:0;">
+                                </iframe>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        else {
+
+            preview.innerHTML = `
+                <div class="text-danger">
+                    Unsupported file type.
+                </div>
+            `;
+        }
+
+    });
+}
 //Reset
 function resetForm() {
     location.reload();

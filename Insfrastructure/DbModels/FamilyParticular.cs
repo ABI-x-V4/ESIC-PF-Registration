@@ -25,9 +25,7 @@ public partial class FamilyParticular
 
     public string? MemberPhotoPath { get; set; }
 
-    public string? ProofDocPath { get; set; }
-
-    public string? TypeOfProof { get; set; }
-
     public virtual EmployeeRegistration Employee { get; set; } = null!;
+
+    public virtual ICollection<FamilyParticularsDocument> FamilyParticularsDocuments { get; set; } = new List<FamilyParticularsDocument>();
 }

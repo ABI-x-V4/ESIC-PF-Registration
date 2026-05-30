@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Employee Registration";
+    ViewData["HideHeader"] = true;
 }
 
 <div class="container mt-4">
@@ -153,10 +154,7 @@
                                     <input type="file" id="AadhaarFile" name="AadhaarFile" class="er-control" asp-for="AadhaarFile" accept=".pdf" />
                                     <div class="er-note"><i class="ri-information-line"></i> Note : Please upload the latest e-Aadhaar in PDF format downloaded from the UIDAI portal. The file must not be password-protected.</div>
                                     <span asp-validation-for="AadhaarFile" class="text-danger"></span>
-
-
-
-
+                                    <div id="aadhaarPreview" class="mt-3"></div>
                                 </div>
                             </div>
                             <div class="col-12 col-md-6">
@@ -170,12 +168,13 @@
                                 <div class="er-form-group">
                                     <label class="er-label">Upload PAN</label>
 
-                                    <input type="file" name="PanFile" class="er-control photo-upload" asp-for="PanFile"
+                                    <input type="file" id="PanFile" name="PanFile" class="er-control photo-upload " asp-for="PanFile"
                                            onchange="validateFileInput(this)"
                                            data-allowed=".jpg,.jpeg"
                                            data-minsize="50"
                                            data-maxsize="100" />
                                     <div class="er-note"><i class="ri-information-line"></i> Note : Photo size should be between 50 KB to 100 KB in JPG, JPEG Format only.</div>
+                                    <div id="panPreview"></div>
                                 </div>
                             </div>
                             <div class="col-12 col-md-6">
@@ -188,6 +187,7 @@
                                            data-minsize="50"
                                            data-maxsize="100" />
                                     <div class="er-note"><i class="ri-information-line"></i> Note : Photo size should be between 50 KB to 100 KB in JPG, JPEG Format only.</div>
+                                    <div id="SelfPhotoPreview"></div>
                                 </div>
                             </div>
                         </div>
@@ -694,9 +694,10 @@
                                     <label class="er-label">Family Member Photo required <span class="text-muted" style="text-transform:none;font-weight:400;font-size:0.7rem;">(Soft Copy)</span><span class="er-req">*</span></label>
                                     <input type="file" class="er-control photo-upload" id="familyPhoto" />
                                     <div class="er-note"><i class="ri-information-line"></i> Photo size should be between 50 KB to 100 KB in JPG, JPEG Format only.</div>
+                                    <div id="FamilyMemberPhotoPreview"></div>
                                 </div>
                             </div>
-                            <div class="col-12 col-sm-6 col-md-4">
+                            @* <div class="col-12 col-sm-6 col-md-4">
                                 <div class="er-form-group">
                                     <label class="er-label">Type of Proof required <span class="er-req">*</span> <span class="text-muted" style="text-transform:none;font-weight:400;font-size:0.7rem;">(Soft Copy)</span></label>
                                     <select id="familyProofType" class="form-select er-control">
@@ -719,9 +720,78 @@
                                     <input type="file" class="er-control me-3 file-upload" id="proofFile" />
                                     <div class="er-note"><i class="ri-information-line"></i> Document type allowed pdf, jpg & jpeg.  & Max size of the documents should be 200KB..</div>
                                 </div>
+                            </div> *@
+                            <div class="col-12">
+                                <div class="er-section-card mt-3">
+                                    <div class="er-section-header d-flex justify-content-between align-items-center">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="er-sh-icon"><i class="ri-file-list-3-line"></i></div>
+                                            <h2 class="mb-0">Family Member Documents</h2>
+                                        </div>
+                                    </div>
+
+                                    <div class="er-section-body">
+                                        <div class="row g-3">
+                                            <div class="col-12 col-sm-6 col-md-4">
+                                                <div class="er-form-group">
+                                                    <label class="er-label">Type of Proof <span class="er-req">*</span></label>
+                                                    <select id="familyDocProofType" class="form-select er-control">
+                                                        <option value="">-- Select Proof Type --</option>
+                                                        <option value="Driving License">Driving License</option>
+                                                        <option value="PAN Card">PAN Card</option>
+                                                        <option value="Passport">Passport</option>
+                                                        <option value="Ration Card">Ration Card</option>
+                                                        <option value="Voter ID">Voter ID</option>
+                                                        <option value="BPL Certificate">BPL Certificate</option>
+                                                        <option value="Birth Certificate">Birth Certificate</option>
+                                                        <option value="Death Certificate">Death Certificate</option>
+                                                        <option value="Passbook/Chequebook">Passbook/Chequebook</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-12 col-sm-6 col-md-5">
+                                                <div class="er-form-group">
+                                                    <label class="er-label">Upload Document <span class="er-req">*</span></label>
+                                                    <input type="file" class="er-control file-upload" id="familyDocFile" />
+                                                    <div class="er-note">
+                                                        <i class="ri-information-line"></i>
+                                                        Allowed: PDF, JPG, JPEG | Max size: 200 KB
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-12 col-sm-6 col-md-3">
+                                                <button type="button" class="er-add-btn mt-4" style="width:auto" onclick="addFamilyDocument()">
+                                                    <i class="ri-add-circle-line"></i> Add Document
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div class="er-table-wrap mt-3">
+                                            <table id="familyDocsTable" class="er-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th style="width:70px;">Item No.</th>
+                                                        <th>Proof Type</th>
+                                                        <th>Document Name</th>
+                                                        <th style="width:120px;">Preview</th>
+                                                        <th style="width:120px;">Action</th>
+
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr id="familyDocsEmptyRow">
+                                                        <td colspan="4" class="text-center text-muted">No document added</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-12 col-sm-6 col-md-4 er-add-btn-wrap">
-                                <div class="d-flex justify-content-between">
+                            <div class="col-12 col-sm-12 col-md-12 er-add-btn-wrap">
+                                <div class="d-flex justify-content-center">
                                     <button type="button" class="er-add-btn mt-4" style="width:auto" onclick="addFamily()">
                                         <i class="ri-add-circle-line"></i> Add
                                     </button>
@@ -744,8 +814,7 @@
                                         <th>If Residing is "No" then <br/> mentioned State of Residing</th>
                                         <th>If Residing is "No" then <br /> mentioned District of Residing</th>
                                         <th>Family Member Photo <br /> required in Soft copy</th>
-                                        <th>Type of Proof <br /> required in Soft copy</th>
-                                        <th>Proof</th>
+                                        <th>Documents</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -791,6 +860,7 @@
                                     <input asp-for="EmpBankDetails.BankDocFile" type="file" class="er-control me-3 file-upload" id="bankDocFile" />
                                     <span asp-validation-for="EmpBankDetails.BankDocFile" class="text-danger"></span>
                                     <div class="er-note"><i class="ri-information-line"></i> Bank Supporting Document type allowed pdf, jpg & jpeg.  & Max size of the documents should be 200KB.</div>
+                                    <div id="bankDocPreview"></div>
                                 </div>
                             </div>
                             <div class="col-12 col-sm-6 col-md-4">
@@ -827,22 +897,6 @@
                 </div>
             </div>
 
-            <!-- Footer Actions -->
-
-            @* <div class="row">
-                <div class="er-footer-actions">
-                    <button type="submit" class="er-btn-submit">
-                        <i class="ri-check-double-line"></i> Submit
-                    </button>
-                    <button type="button" class="er-btn-reset" onclick="resetForm()">
-                        <i class="ri-refresh-line"></i> Reset Form
-                    </button>
-                    <div class="er-footer-note">
-                        <i class="ri-error-warning-line" style="color: #ff0a0a;"></i>
-                        Fields marked <strong>*</strong> are mandatory
-                    </div>
-                </div>
-            </div> *@
             <div class="row">
                 <div class="er-footer-actions">
 
@@ -872,7 +926,30 @@
     </div>
 </div>
 
+@functions {
 
+    public bool IsImage(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            return false;
+
+        var ext = System.IO.Path.GetExtension(path).ToLower();
+
+        return ext == ".jpg"
+            || ext == ".jpeg"
+            || ext == ".png"
+            || ext == ".gif"
+            || ext == ".webp";
+    }
+
+    public bool IsPdf(string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+            return false;
+
+        return System.IO.Path.GetExtension(path).ToLower() == ".pdf";
+    }
+}
 @section Scripts {
 
     @if (TempData["Message"] != null)
@@ -886,4 +963,5 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
 }

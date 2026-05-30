@@ -210,7 +210,14 @@ namespace Services.Employee
                                 : null,
 
                             MemberPhotoPath = f.MemberPhotoPath,
-                            ProofDocPath = f.ProofDocPath
+                            familyParticularsDocumentDTOs = f.FamilyParticularsDocuments.Select(x => new FamilyParticularsDocumentDTO
+                            {
+                                Id = x.Id,
+                                FamilyParticualrId = x.FamilyParticualrId,
+                                DocName = x.DocName,
+                                DocPath = x.DocPath
+                            }).ToList()
+
                         }).ToList()
                 })
                 .ToListAsync();
@@ -316,6 +323,7 @@ namespace Services.Employee
                         .Include(x => x.EmpBankDetails)
                         .Include(x => x.NomineeDetails)
                         .Include(x => x.FamilyParticulars)
+                        .ThenInclude(x => x.FamilyParticularsDocuments)
                         .FirstOrDefaultAsync(x => x.EmployeeId == dto.EmployeeId);
 
                     if (employee == null)
@@ -543,8 +551,42 @@ namespace Services.Employee
                     family.StateIdofResiding = item.StateIdofResiding;
                     family.DistrictIdofResiding = item.DistrictIdofResiding;
                     family.MemberPhotoPath = item.MemberPhotoPath;
-                    family.ProofDocPath = item.ProofDocPath;
-                    family.TypeOfProof = item.TypeOfProof;
+
+
+                    var existingDocs = family.FamilyParticularsDocuments.ToList();
+
+                    foreach (var oldDoc in existingDocs)
+                    {
+                        if (!item.familyParticularsDocumentDTOs
+                            .Any(x => x.Id == oldDoc.Id))
+                        {
+                            _context.FamilyParticularsDocuments.Remove(oldDoc);
+                        }
+                    }
+
+
+                    foreach (var docItem in item.familyParticularsDocumentDTOs)
+                    {
+                        FamilyParticularsDocument? doc = null;
+
+                        if (docItem.Id > 0)
+                        {
+                            doc = family.FamilyParticularsDocuments
+                                .FirstOrDefault(x => x.Id == docItem.Id);
+                        }
+
+                        if (doc == null)
+                        {
+                            doc = new FamilyParticularsDocument();
+                            family.FamilyParticularsDocuments.Add(doc);
+                        }
+
+                        doc.DocName = docItem.DocName;
+                        doc.DocPath = docItem.DocPath;
+                        doc.CreatedDate = DateTime.Now;
+                    }
+
+
                 }
 
                 #endregion
@@ -679,9 +721,10 @@ namespace Services.Employee
             parameters = new List<SqlParameter>();
 
             var sql = new StringBuilder(@" SELECT f.EmployeeId, f.Name, f.DOB, f.Relationship, f.Gender, f.ResidingWith [Residing With], s.Name AS State, d.Name AS District,
-                                            f.TypeOfProof [Type Of Proof]
+                                            fd.DocName [Type Of Proof]
                                             FROM EmployeeRegistration e
                                             INNER JOIN FamilyParticulars f ON e.EmployeeId = f.EmployeeId
+                                            INNER JOIN FamilyParticularsDocuments fd on fd.FamilyParticualrId=f.Id
                                             INNER JOIN States s ON s.Id = f.StateIdofResiding
                                             INNER JOIN Districts d ON d.Id = f.DistrictIdofResiding
                                             WHERE 1=1 ");

@@ -21,7 +21,6 @@ namespace ESIC_PF_Registration.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Login()
         {
-            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return View(new UserDTO());
         }
 

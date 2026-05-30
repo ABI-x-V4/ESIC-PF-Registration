@@ -29,6 +29,8 @@ public partial class EsicPfRegistrationDbContext : DbContext
 
     public virtual DbSet<FamilyParticular> FamilyParticulars { get; set; }
 
+    public virtual DbSet<FamilyParticularsDocument> FamilyParticularsDocuments { get; set; }
+
     public virtual DbSet<NomineeDetail> NomineeDetails { get; set; }
 
     public virtual DbSet<PfRegistration> PfRegistrations { get; set; }
@@ -201,12 +203,24 @@ public partial class EsicPfRegistrationDbContext : DbContext
             entity.Property(e => e.Name).HasMaxLength(200);
             entity.Property(e => e.Relationship).HasMaxLength(50);
             entity.Property(e => e.ResidingWith).HasMaxLength(5);
-            entity.Property(e => e.TypeOfProof).HasMaxLength(50);
 
             entity.HasOne(d => d.Employee).WithMany(p => p.FamilyParticulars)
                 .HasForeignKey(d => d.EmployeeId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Family_InsuredPerson");
+        });
+
+        modelBuilder.Entity<FamilyParticularsDocument>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__FamilyPa__3214EC07AFC97F42");
+
+            entity.Property(e => e.CreatedDate).HasColumnType("datetime");
+            entity.Property(e => e.DocName).HasMaxLength(100);
+
+            entity.HasOne(d => d.FamilyParticualr).WithMany(p => p.FamilyParticularsDocuments)
+                .HasForeignKey(d => d.FamilyParticualrId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_FamilyParticulars_doc");
         });
 
         modelBuilder.Entity<NomineeDetail>(entity =>
@@ -281,10 +295,6 @@ public partial class EsicPfRegistrationDbContext : DbContext
             entity.Property(e => e.Uan)
                 .HasMaxLength(12)
                 .HasColumnName("UAN");
-
-            entity.HasOne(d => d.Employee).WithMany(p => p.PfRegistrations)
-                .HasForeignKey(d => d.EmployeeId)
-                .HasConstraintName("FK_PF_Registration_Employee");
         });
 
         modelBuilder.Entity<State>(entity =>

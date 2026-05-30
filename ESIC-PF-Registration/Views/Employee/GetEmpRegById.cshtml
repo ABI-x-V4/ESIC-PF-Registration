@@ -603,8 +603,7 @@
                                     <th>If Residing is "No" then <br/> mentioned State of Residing</th>
                                     <th>If Residing is "No" then <br/> mentioned District of Residing</th>
                                     <th>Family Member <br /> Photo</th>
-                                    <th>Type of <br /> Proof</th>
-                                    <th style="width:150px;">Proof</th>
+                                    <th style="width:250px;">Documents</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -612,7 +611,7 @@
                                 {
                                     var item = Model.FamilyParticulars[i];
                                     var memphotoUrl = ToUrl(item.MemberPhotoPath);
-                                    var proofUrl = ToUrl(item.ProofDocPath);
+                                    //var proofUrl = ToUrl(item.ProofDocPath);
 
                                     var photoModalId = $"fp_photo_{i}";
                                     var proofModalId = $"fp_proof_{i}";
@@ -690,67 +689,148 @@
                                             }
                                         </td>
 
-                                        <td>@item.TypeOfProof</td>
+                                        <td style="width:250px;">
 
-                                        <td style="width:150px;">
-                                            @if (!string.IsNullOrWhiteSpace(item.ProofDocPath))
+                                            @if (item.familyParticularsDocumentDTOs != null && item.familyParticularsDocumentDTOs.Any())
                                             {
-                                                if (IsImage(item.ProofDocPath))
+                                                foreach (var doc in item.familyParticularsDocumentDTOs)
                                                 {
-                                                    <a href="@proofUrl" data-bs-toggle="modal" data-bs-target="#@proofModalId" style="width: 60px !important;"
-                                                       class="el-act act-view w-50 mt-2" title="View"><i class="ri-eye-line me-1"></i> View</a>
+                                                    var proofUrl = ToUrl(doc.DocPath);
+                                                    var docModalId = $"fp_doc_{i}_{doc.Id}_{Guid.NewGuid().ToString("N")}";
 
-                                                    <!-- Modal for image proof -->
-                                                    <div class="modal fade" id="@proofModalId" tabindex="-1" aria-hidden="true">
-                                                        <div class="modal-dialog modal-dialog-centered modal-lg">
-                                                            <div class="modal-content border-0">
-                                                                <div class="modal-body p-0">
-                                                                    <button type="button"
-                                                                            class="btn-close b-red position-absolute top-0 end-0 m-3"
-                                                                            data-bs-dismiss="modal"
-                                                                            aria-label="Close">
-                                                                        <i class="ri-close-line"></i>
-                                                                    </button>
-                                                                    <img src="@proofUrl" class="img-fluid rounded" alt="Full Proof" />
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                }
-                                                else if (IsPdf(item.ProofDocPath))
-                                                {
-                                                    <a href="@proofUrl" data-bs-toggle="modal" data-bs-target="#@proofModalId" style="width: 60px !important;"
-                                                       class="el-act act-view w-100" title="View"><i class="ri-eye-line me-1"></i> View</a>
+                                                    <div class="border rounded p-2 mb-2">
 
-                                                    <!-- Modal for PDF proof -->
-                                                    <div class="modal fade" id="@proofModalId" tabindex="-1" aria-hidden="true">
-                                                        <div class="modal-dialog modal-dialog-centered modal-xl">
-                                                            <div class="modal-content">
-                                                                <div class="modal-header">
-                                                                    <h6 class="modal-title">Proof Document</h6>
-                                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                                </div>
-                                                                <div class="modal-body p-0">
-                                                                    <iframe src="@proofUrl" style="width:100%;height:80vh;border:0;"></iframe>
-                                                                </div>
-                                                            </div>
+                                                        <div class="fw-semibold small mb-2">
+                                                            @doc.DocName
                                                         </div>
+
+                                                        @if (!string.IsNullOrWhiteSpace(doc.DocPath))
+                                                        {
+                                                            @if (IsImage(doc.DocPath))
+                                                            {
+                                                                <a href="@proofUrl"
+                                                                   data-bs-toggle="modal"
+                                                                   data-bs-target="#@docModalId"
+                                                                   class="el-act act-view"
+                                                                   style="width: 60px !important;"
+                                                                   title="View">
+
+                                                                    <i class="ri-eye-line me-1"></i> View
+
+                                                                </a>
+
+                                                                <!-- Image Modal -->
+                                                                <div class="modal fade"
+                                                                     id="@docModalId"
+                                                                     tabindex="-1"
+                                                                     aria-hidden="true">
+
+                                                                    <div class="modal-dialog modal-dialog-centered modal-lg">
+
+                                                                        <div class="modal-content border-0">
+
+                                                                            <div class="modal-body p-0">
+
+                                                                                <button type="button"
+                                                                                        class="btn-close b-red position-absolute top-0 end-0 m-3"
+                                                                                        data-bs-dismiss="modal"
+                                                                                        aria-label="Close">
+
+                                                                                    <i class="ri-close-line"></i>
+
+                                                                                </button>
+
+                                                                                <img src="@proofUrl"
+                                                                                     class="img-fluid rounded"
+                                                                                     alt="Document Preview" />
+
+                                                                            </div>
+
+                                                                        </div>
+
+                                                                    </div>
+
+                                                                </div>
+                                                            }
+                                                            else if (IsPdf(doc.DocPath))
+                                                            {
+                                                                <a href="@proofUrl"
+                                                                   data-bs-toggle="modal"
+                                                                   data-bs-target="#@docModalId"
+                                                                   class="el-act act-view"
+                                                                   style="width: 60px !important;"
+                                                                   title="View">
+
+                                                                    <i class="ri-eye-line me-1"></i> View
+
+                                                                </a>
+
+                                                                <!-- PDF Modal -->
+                                                                <div class="modal fade"
+                                                                     id="@docModalId"
+                                                                     tabindex="-1"
+                                                                     aria-hidden="true">
+
+                                                                    <div class="modal-dialog modal-dialog-centered modal-xl">
+
+                                                                        <div class="modal-content">
+
+                                                                            <div class="modal-header">
+
+                                                                                <h6 class="modal-title">
+                                                                                    @doc.DocName
+                                                                                </h6>
+
+                                                                                <button type="button"
+                                                                                        class="btn-close"
+                                                                                        data-bs-dismiss="modal"
+                                                                                        aria-label="Close">
+                                                                                </button>
+
+                                                                            </div>
+
+                                                                            <div class="modal-body p-0">
+
+                                                                                <iframe src="@proofUrl"
+                                                                                        style="width:100%;height:80vh;border:0;">
+                                                                                </iframe>
+
+                                                                            </div>
+
+                                                                        </div>
+
+                                                                    </div>
+
+                                                                </div>
+                                                            }
+                                                            else
+                                                            {
+                                                                <a href="@proofUrl"
+                                                                   target="_blank"
+                                                                   class="btn btn-sm btn-outline-secondary">
+
+                                                                    <i class="ri-download-2-line"></i> Open
+
+                                                                </a>
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="text-muted">No File</span>
+                                                        }
+
                                                     </div>
-                                                }
-                                                else
-                                                {
-                                                    <a href="@proofUrl" target="_blank" class="btn btn-sm btn-outline-secondary">
-                                                        <i class="ri-download-2-line"></i> Open
-                                                    </a>
                                                 }
                                             }
                                             else
                                             {
                                                 <span class="text-muted">-</span>
                                             }
+
                                         </td>
                                     </tr>
                                 }
+                     
                             </tbody>
                         </table>
                     </div>

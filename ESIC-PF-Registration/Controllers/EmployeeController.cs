@@ -83,7 +83,7 @@ namespace ESIC_PF_Registration.Controllers
 
             if (employeeId > 0)
             {
-                TempData["Message"] = "ESIC Registration Successfull.";
+                //TempData["Message"] = "ESIC Registration Successfull.";
                 return RedirectToAction(nameof(ThankYouPage));
                // return RedirectToAction("CreatePfEmployeeReg", "Pf", new { employeeId = employeeId });
             }
@@ -145,17 +145,17 @@ namespace ESIC_PF_Registration.Controllers
         {
             if (model.PhotoFile != null && model.PhotoFile.Length > 0)
             {
-                dto.PhotoPath = await SaveFileAsync(model.PhotoFile, "uploads/EmployeeReg/employee-photos");
+                dto.PhotoPath = await SaveFileAsync(model.PhotoFile, "uploads/EmployeeESICReg/employee-photos");
             }
 
             if (model.AadhaarFile != null && model.AadhaarFile.Length > 0)
             {
-                dto.AadhaarPath = await SaveFileAsync(model.AadhaarFile, "uploads/EmployeeReg/employee-aadhaar");
+                dto.AadhaarPath = await SaveFileAsync(model.AadhaarFile, "uploads/EmployeeESICReg/employee-aadhaar");
             }
 
             if (model.PanFile != null && model.PanFile.Length > 0)
             {
-                dto.PanPath = await SaveFileAsync(model.PanFile, "uploads/EmployeeReg/employee-pan");
+                dto.PanPath = await SaveFileAsync(model.PanFile, "uploads/EmployeeESICReg/employee-pan");
             }
 
             if (dto.FamilyParticulars != null && dto.FamilyParticulars.Count > 0)
@@ -170,7 +170,7 @@ namespace ESIC_PF_Registration.Controllers
                             if (file != null && file.Length > 0)
                             {
                                 dto.FamilyParticulars[i].MemberPhotoPath =
-                                    await SaveFileAsync(file, "uploads/EmployeeReg/family-member-photos");
+                                    await SaveFileAsync(file, "uploads/EmployeeESICReg/family-member-photos");
                             }
                         }
                     }
@@ -178,19 +178,55 @@ namespace ESIC_PF_Registration.Controllers
 
                 if (model.FamilyProofDocs != null && model.FamilyProofDocs.Count > 0)
                 {
+                    int proofFileIndex = 0;
+
                     for (int i = 0; i < dto.FamilyParticulars.Count; i++)
                     {
-                        if (i < model.FamilyProofDocs.Count)
+                        var familyMember = dto.FamilyParticulars[i];
+
+                        if (familyMember.familyParticularsDocumentDTOs == null ||
+                            familyMember.familyParticularsDocumentDTOs.Count == 0)
                         {
-                            var file = model.FamilyProofDocs[i];
+                            continue;
+                        }
+
+                        for (int j = 0; j < familyMember.familyParticularsDocumentDTOs.Count; j++)
+                        {
+                            if (proofFileIndex >= model.FamilyProofDocs.Count)
+                                break;
+
+                            var file = model.FamilyProofDocs[proofFileIndex];
+
                             if (file != null && file.Length > 0)
                             {
-                                dto.FamilyParticulars[i].ProofDocPath =
-                                    await SaveFileAsync(file, "uploads/EmployeeReg/family-proof-docs");
+                                familyMember.familyParticularsDocumentDTOs[j].DocPath =
+                                    await SaveFileAsync(
+                                        file,
+                                        "uploads/EmployeeESICReg/family-proof-docs"
+                                    );
+
+                                familyMember.familyParticularsDocumentDTOs[j].CreatedDate = DateTime.Now;
                             }
+
+                            proofFileIndex++;
                         }
                     }
                 }
+                //if (model.FamilyProofDocs != null && model.FamilyProofDocs.Count > 0)
+                //{
+                //    for (int i = 0; i < dto.FamilyParticulars.Count; i++)
+                //    {
+                //        if (i < model.FamilyProofDocs.Count)
+                //        {
+                //            var file = model.FamilyProofDocs[i];
+                //            if (file != null && file.Length > 0)
+                //            {
+                //                dto.FamilyParticulars[i].ProofDocPath =
+                //                    await SaveFileAsync(file, "uploads/EmployeeReg/family-proof-docs");
+                //            }
+                //        }
+                //    }
+                //}
             }
             if (model.EmpBankDetails.BankDocFile != null && model.EmpBankDetails.BankDocFile.Length > 0)
             {

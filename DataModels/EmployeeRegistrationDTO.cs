@@ -163,8 +163,7 @@ namespace DataModels
         public string? StateName { get; set; }
         public string? DistrictName { get; set; }
         public string? MemberPhotoPath { get; set; }
-        public string? ProofDocPath { get; set; }
-        public string TypeOfProof { get; set; } = null!;
+        public List<FamilyParticularsDocumentDTO> familyParticularsDocumentDTOs { get; set; }= new List<FamilyParticularsDocumentDTO>();
     }
     public class EmpBankDetailDTO
     {
@@ -184,5 +183,13 @@ namespace DataModels
         public string? BankDoc { get; set; } = null!;
         [Required(ErrorMessage = "Bank Document is required.")]
         public IFormFile? BankDocFile { get; set; }
+    }
+    public class FamilyParticularsDocumentDTO
+    {
+        public int Id { get; set; }
+        public int FamilyParticualrId { get; set; }
+        public string? DocName { get; set; }
+        public string? DocPath { get; set; }
+        public DateTime? CreatedDate { get; set; }
     }
 }

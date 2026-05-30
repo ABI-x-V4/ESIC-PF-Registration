@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Employee PF Registration";
+    ViewData["HideHeader"] = true;
 }
 
 <div class="container pf-page">
@@ -21,7 +22,6 @@
     </div>
     <form asp-action="CreatePfEmployeeReg" method="post" enctype="multipart/form-data" id="employeePFForm">
         @Html.AntiForgeryToken()
-        <input asp-for="EmployeeId" type="hidden" />
 
         <div class="row">
         <div class="pf-card px-0">

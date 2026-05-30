@@ -38,10 +38,7 @@ namespace ESIC_PF_Registration.Controllers
         [HttpGet("CreatePfEmployeeReg")]
         public IActionResult CreatePfEmployeeReg(int employeeId)
         {
-            var model = new PfRegistrationDTO
-            {
-                EmployeeId = employeeId
-            };
+            var model = new PfRegistrationDTO();
             
             return View(model);
         }
@@ -65,7 +62,7 @@ namespace ESIC_PF_Registration.Controllers
 
             if (result == "Success")
             {
-                TempData["Message"] = "Saved successfully.";
+               // TempData["Message"] = "Saved successfully.";
                 return RedirectToAction(nameof(ResultPage));
             }
 
