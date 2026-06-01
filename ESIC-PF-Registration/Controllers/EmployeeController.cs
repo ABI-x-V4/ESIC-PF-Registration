@@ -84,8 +84,8 @@ namespace ESIC_PF_Registration.Controllers
             if (employeeId > 0)
             {
                 //TempData["Message"] = "ESIC Registration Successfull.";
-                return RedirectToAction(nameof(ThankYouPage));
-               // return RedirectToAction("CreatePfEmployeeReg", "Pf", new { employeeId = employeeId });
+                //return RedirectToAction(nameof(ThankYouPage));
+                return RedirectToAction("CreatePfEmployeeReg", "Pf");
             }
 
             TempData["Message"] = "Failed to create employee.";
