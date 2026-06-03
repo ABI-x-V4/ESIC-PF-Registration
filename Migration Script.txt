@@ -1,0 +1,7 @@
+1. Scaffold-DbContext "Server=.;Database=ESIC-PF-RegistrationDB;User Id=sa;Password=aparna@321;TrustServerCertificate=True;" Microsoft.EntityFrameworkCore.SqlServer -OutputDir D:\ESIC-PF-Registration\Insfrastructure\DbModels -Force
+
+2. Add-Migration InitialBaseline
+
+3. Update-Database
+
+4. Script-Migration
