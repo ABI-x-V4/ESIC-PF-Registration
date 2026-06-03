@@ -4,7 +4,35 @@
     ViewData["Title"] = "Employee Registration";
     ViewData["HideHeader"] = true;
 }
+<style>
+    .sc-submit-btn {
+        background: linear-gradient(135deg, #ff8302 0%, #e07200 100%);
+        color: #ffffff;
+        border: none;
+        width: auto;
+        padding: 14px;
+        font-size: 15px;
+        font-weight: 600;
+        border-radius: 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        box-shadow: 0 8px 16px rgba(255, 131, 2, 0.2);
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
 
+        .sc-submit-btn:hover {
+            box-shadow: 0 12px 20px rgba(255, 131, 2, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .sc-submit-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 8px rgba(255, 131, 2, 0.15);
+        }
+</style>
 <div class="container mt-4">
     <div class="form-container">
         <div class="row">
@@ -900,7 +928,7 @@
             <div class="row">
                 <div class="er-footer-actions">
 
-                    <button type="button" id="btnPreview" class="er-btn-preview">
+                    <button type="button" id="btnPreview" class="sc-submit-btn">
                         <i class="ri-eye-line"></i> Preview
                     </button>
 

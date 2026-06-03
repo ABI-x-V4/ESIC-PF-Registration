@@ -4,7 +4,35 @@
     ViewData["Title"] = "Employee PF Registration";
     ViewData["HideHeader"] = true;
 }
+<style>
+    .sc-submit-btn {
+        background: linear-gradient(135deg, #ff8302 0%, #e07200 100%);
+        color: #ffffff;
+        border: none;
+        width: auto;
+        padding: 14px;
+        font-size: 15px;
+        font-weight: 600;
+        border-radius: 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        box-shadow: 0 8px 16px rgba(255, 131, 2, 0.2);
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
 
+        .sc-submit-btn:hover {
+            box-shadow: 0 12px 20px rgba(255, 131, 2, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .sc-submit-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 8px rgba(255, 131, 2, 0.15);
+        }
+</style>
 <div class="container pf-page">
     <div class="row">
         <div class="er-main-heading">
@@ -98,6 +126,7 @@
                                 password-protected
 
                             </div>
+                            <div id="aadhaarPreview"></div>
                         </div>
 
                 </div>
@@ -163,6 +192,7 @@
                                 <input type="file" id="panFile" name="panFile" class="er-control" asp-for="PanFile" />
                                 <span id="panText">No file selected</span>
                             </div>
+                                <div id="panPreview"></div>
                         </div>
                         <span asp-validation-for="PanFile" class="text-danger"></span>
                         <div class="er-note">
@@ -281,7 +311,7 @@
             </button>
         </div> *@
             <div class="pf-save-wrap">
-                <button type="button" id="btnPreview" class="pf-btn-preview">
+                <button type="button" id="btnPreview" class="sc-submit-btn">
                     <i class="ri-eye-line"></i>
                     Preview
                 </button>

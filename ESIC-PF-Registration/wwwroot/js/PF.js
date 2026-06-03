@@ -63,6 +63,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const btnFinalSubmit = document.getElementById("btnFinalSubmit");
     const previewBanner = document.getElementById("previewBanner");
 
+    bindPfFilePreview("aadhaarFile", "aadhaarPreview");
+    bindPfFilePreview("panFile", "panPreview");
     function getFormControls() {
         return form.querySelectorAll("input, select, textarea, button");
     }
@@ -156,4 +158,143 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 });
+
+function bindPfFilePreview(inputId, previewId) {
+
+    const input = document.getElementById(inputId);
+    const style = document.createElement("style");
+
+    style.innerHTML = `
+                        .thumbb .img-thumbnail-clickable {
+                            cursor: pointer;
+                            transition: opacity 0.2s;
+                        }
+
+                            .thumbb .img-thumbnail-clickable:hover {
+                                opacity: 0.8;
+                            }
+
+                        .thumbb img {
+                            height: 100px;
+                            width: 100px;
+                            object-fit: cover;
+                        }
+
+                        .b-red {
+                            background: red;
+                            background-color: red;
+                            border: 1px solid #fff;
+                            --bs-btn-close-bg: none;
+                            opacity: 1;
+                            color: #fff;
+                            line-height: 15px;
+                        }
+
+                            .b-red:hover {
+                                color: #fff !important;
+                                opacity: 1 !important;
+                            }
+
+                        .pdf-thumbb img {
+                            cursor: pointer;
+                            transition: opacity 0.2s;
+                            height: 100px;
+                            width: 100px;
+                            object-fit: cover;
+                            padding: .25rem;
+                            background-color: #fff;
+                            border: 1px solid rgb(222 226 230);
+                            border-radius: 0.375rem;
+                            max-width: 100%;
+                        }
+                            `;
+    document.head.appendChild(style);
+    input.addEventListener("change", function () {
+
+        const preview = document.getElementById(previewId);
+
+        preview.innerHTML = "";
+
+        if (this.files.length === 0)
+            return;
+
+        const file = this.files[0];
+
+        const extension = file.name.split('.').pop().toLowerCase();
+
+        const fileUrl = URL.createObjectURL(file);
+
+        const modalId = `${inputId}_FileModal`;
+
+        // IMAGE
+        if (["jpg", "jpeg"].includes(extension)) {
+
+            preview.innerHTML = `
+            
+                <div class="thumbb text-center">                   
+                    <div class="mt-2">
+                        <a href="javascript:void(0)" class="el-act act-view" data-bs-toggle="modal" data-bs-target="#${modalId}" title="View" style="width:80px !important;">
+                            <i class="ri-eye-line me-1"></i> View
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Modal -->
+                <div class="modal fade" id="${modalId}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content border-0">
+                            <div class="modal-body p-0">
+                                <button type="button" class="btn-close b-red position-absolute top-0 end-0 m-3" data-bs-dismiss="modal">
+                                    <i class="ri-close-line"></i>
+                                </button>
+                                <img src="${fileUrl}" class="img-fluid rounded w-100" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // PDF
+        else if (extension === "pdf") {
+
+            preview.innerHTML = `
+            
+                <div class="pdf-thumbb text-center">
+                    <div class="mt-2">
+                        <a href="javascript:void(0)" class="el-act act-view" data-bs-toggle="modal" data-bs-target="#${modalId}" title="View"  style="width:80px !important;">
+                            <i class="ri-eye-line me-1"></i> View
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Modal -->
+                <div class="modal fade" id="${modalId}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-xl">
+                        <div class="modal-content">     
+                            <div class="modal-body p-0">
+                                  <button type="button" class="btn-close b-red position-absolute top-0 end-0 m-3" data-bs-dismiss="modal">
+                                    <i class="ri-close-line"></i>
+                                </button>
+                                <iframe src="${fileUrl}"
+                                        style="width:100%;height:80vh;border:0;">
+                                </iframe>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        else {
+
+            preview.innerHTML = `
+                <div class="text-danger">
+                    Unsupported file type.
+                </div>
+            `;
+        }
+
+    });
+}
 
