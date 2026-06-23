@@ -24,7 +24,7 @@ namespace ESIC_PF_Registration.Controllers
             return View(new UserDTO());
         }
 
-        [HttpPost("login")]
+        [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(UserDTO model)
@@ -64,7 +64,7 @@ namespace ESIC_PF_Registration.Controllers
             return RedirectToAction("GetAllEmpReg", "Employee");
         }
 
-        [HttpPost]
+        [HttpPost("Logout")]
         [Authorize]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()

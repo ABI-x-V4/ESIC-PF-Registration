@@ -35,18 +35,27 @@ namespace ESIC_PF_Registration.Controllers
         }
 
 
-        [HttpGet("CreatePfEmployeeReg")]
-        public IActionResult CreatePfEmployeeReg(int employeeId)
+        [HttpGet]
+        public IActionResult CreatePfEmployeeReg(int employeeId = 0)
         {
+            var pfSaved = Request.Cookies["PfSaved"];
+
+            if (pfSaved == "true")
+            {
+                return RedirectToAction(nameof(ResultPage));
+            }
+
+            ViewData["ShowTab"] = true;
             var model = new PfRegistrationDTO();
             
             return View(model);
         }
 
-        [HttpPost("CreatePfEmployeeReg")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreatePfEmployeeReg(PfRegistrationDTO model)
         {
+            ViewData["ShowTab"] = true;
             await AttachUploadedFilesAsync(model, model);
             if (!ModelState.IsValid)
             {
@@ -62,7 +71,15 @@ namespace ESIC_PF_Registration.Controllers
 
             if (result == "Success")
             {
-               // TempData["Message"] = "Saved successfully.";
+                Response.Cookies.Append("PfSaved","true",
+                                new CookieOptions
+                                {
+                                    HttpOnly = true,
+                                    Secure = Request.IsHttps,
+                                    SameSite = SameSiteMode.Lax,
+                                    Expires = DateTimeOffset.UtcNow.AddHours(1)
+                                });
+
                 return RedirectToAction(nameof(ResultPage));
             }
 
@@ -87,6 +104,7 @@ namespace ESIC_PF_Registration.Controllers
 
         public IActionResult ResultPage()
         {
+            ViewData["ShowTab"] = true;
             return View();
         }
 

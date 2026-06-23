@@ -43,9 +43,17 @@ namespace ESIC_PF_Registration.Controllers
             return View(model);
         }
 
-        [HttpGet("CreateEmployeeReg")]
+        [HttpGet]
         public async Task<IActionResult> CreateEmployeeReg()
         {
+            var employeeSaved = Request.Cookies["EmployeeSaved"];
+
+            if (employeeSaved == "true")
+            {
+                return RedirectToAction(nameof(ThankYouPage)); 
+            }
+
+            ViewData["ShowTab"] = true;
             var model = new EmployeeRegistrationDTO();
             var states = await _istate.GetAllStates();
             model.StateList = states.Select(s => new SelectListItem
@@ -57,10 +65,12 @@ namespace ESIC_PF_Registration.Controllers
             return View(model);
         }
 
-        [HttpPost("CreateEmployeeReg")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateEmployeeReg(EmployeeRegistrationDTO model)
         {
+            ViewData["ShowTab"] = true; // ADDED
+
             var states = await _istate.GetAllStates();
             model.StateList = states.Select(s => new SelectListItem
             {
@@ -83,9 +93,17 @@ namespace ESIC_PF_Registration.Controllers
 
             if (employeeId > 0)
             {
-                //TempData["Message"] = "ESIC Registration Successfull.";
-                //return RedirectToAction(nameof(ThankYouPage));
-                return RedirectToAction("CreatePfEmployeeReg", "Pf");
+                Response.Cookies.Append("EmployeeSaved","true",
+                                new CookieOptions
+                                {
+                                    HttpOnly = true,
+                                    Secure = Request.IsHttps,
+                                    SameSite = SameSiteMode.Lax,
+                                    Expires = DateTimeOffset.UtcNow.AddHours(1)
+                                });
+
+                return RedirectToAction(nameof(ThankYouPage));
+               // return RedirectToAction("CreatePfEmployeeReg", "Pf");
             }
 
             TempData["Message"] = "Failed to create employee.";

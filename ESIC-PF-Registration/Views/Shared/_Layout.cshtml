@@ -4,15 +4,29 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - EMPLOYEE REGISTRATION</title>
-  @*   <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" /> *@
-   
-   @*  <link rel="stylesheet" href="~/Insfrastructure.DbModels.styles.css" asp-append-version="true" /> *@
+    @*   <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" /> *@
+
+    @*  <link rel="stylesheet" href="~/Insfrastructure.DbModels.styles.css" asp-append-version="true" /> *@
     <link href="~/bootstrap.min.css" rel="stylesheet" />
     <!-- Remix Icons -->
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet" />
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <style>
+        .er-nav-menu a {
+            text-decoration: none;
+            color: #444;
+            padding: 8px 12px;
+            display: inline-block;
+        }
+
+            .er-nav-menu a.er-active {
+                color: #f28c28;
+                border-bottom: 2px solid #f28c28;
+                font-weight: 600;
+            }
+    </style>
 </head>
 <body>
     @if (!(ViewData["HideHeader"] as bool? ?? false))
@@ -83,7 +97,39 @@
 
         </header>
     }
-    
+
+    @if (ViewData["ShowTab"] as bool? ?? false)
+    {
+        var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+        var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+
+        var isPfActive = currentController == "Pf" && currentAction == "CreatePfEmployeeReg";
+        var isEsicActive = currentController == "Employee" && currentAction == "CreateEmployeeReg";
+
+        
+       <header>
+                <nav class="er-navbar">
+                    <a>
+                        <img src="https://www.salescom.in/images/logo-new3.png" alt="Salescom" />
+                    </a>
+                    <div class="er-nav-center">                        
+                       <ul class="er-nav-menu">
+                            <li>
+                                <a class="@(isPfActive ? "er-active" : "")"
+                                   asp-controller="Pf"
+                               asp-action="CreatePfEmployeeReg"><i class="ri-home-4-line"></i> Pf Reg</a>
+                            <li>
+                                <a class="@(isEsicActive ? "er-active" : "")"
+                                   asp-controller="Employee"
+                               asp-action="CreateEmployeeReg"><i class="ri-home-4-line"></i> ESIC Reg</a>
+                       </ul>
+                    </div>
+                </nav>
+            </header>
+
+       
+    }
+
     <div class="container er-page">
         <main role="main" class="pb-3">
             @RenderBody()
@@ -97,11 +143,11 @@
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
- @*    <script src="~/js/jquery-3.6.0.min.js"></script> *@
+    @*    <script src="~/js/jquery-3.6.0.min.js"></script> *@
     <script src="~/js/site.js" asp-append-version="true"></script>
 
 
-   
+
 
     <script>
         /* ════════════════════════════════
@@ -126,9 +172,9 @@
           }
         });
 
-        
+
     </script>
-    
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
