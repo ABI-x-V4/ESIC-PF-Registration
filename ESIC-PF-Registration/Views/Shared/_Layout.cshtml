@@ -42,11 +42,24 @@
                 <!-- Desktop Nav -->
                 <div class="er-nav-center">
                     <ul class="er-nav-menu">
-                        <li><a class="er-active" asp-area="" asp-controller="Employee" asp-action="GetAllEmpReg"><i class="ri-home-4-line"></i> ESIC List</a></li>
+                        @* <li><a class="er-active" asp-area="" asp-controller="Employee" asp-action="GetAllEmpReg"><i class="ri-home-4-line"></i> ESIC List</a></li>
                         <li><a class="" asp-area="" asp-controller="Pf" asp-action="GetAllPf"><i class="ri-user-add-line"></i> PF List</a></li>
-                        @*  <li><a class="" href="#"><i class="ri-user-add-line"></i> Employee Reg</a></li>
-                    <li><a class="" asp-area="" asp-controller="Home" asp-action="Privacy"><i class="ri-file-list-3-line"></i> Privacy</a></li>
-                    *@
+                         *@
+
+                        <li>
+                            <a class="@(ViewContext.RouteData.Values["action"]?.ToString() == "GetAllEmpReg" ? "er-active" : "")"
+                               asp-controller="Employee" asp-action="GetAllEmpReg">
+                                <i class="ri-home-4-line"></i> ESIC List
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="@(ViewContext.RouteData.Values["action"]?.ToString() == "GetAllPf" ? "er-active" : "")"
+                               asp-controller="Pf" asp-action="GetAllPf">
+                                <i class="ri-user-add-line"></i> PF List
+                            </a>
+                        </li>
+
                     </ul>
                 </div>
 
